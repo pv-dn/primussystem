@@ -953,7 +953,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">この客先を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span> → 用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。左上に客先名＋様、右上に小計・消費税・ご請求金額、下に品名・単価・納品日別数量の表（1ページ20行）です。</div></div>
       <div class="help-step"><div class="help-step-num">日次</div><div class="help-step-body"><div class="help-step-title">未反映→請求明細Excel</div>未反映の伝票（押し忘れ分を含む）を対象に、該当客先・請求月のシートを含む Excel を出力。ファイル名例: <code>purims_meisai_20250818.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">月次</div><div class="help-step-body"><div class="help-step-title">請求月Excel出力</div><span class="help-tag">請求</span> または <span class="help-tag">データ</span> タブで年月を指定して再出力。ファイル名例: <code>purims_meisai_202508.xlsx</code></div></div>
-      <div class="help-step"><div class="help-step-num">内容</div><div class="help-step-body"><div class="help-step-title">シート構成</div>シート名は <code>客先名_YYYY年M月</code>。品名・単価・日別数量（最大14日分）・合計数・合計金額・小計・消費税10%・ご請求金額を含みます。マスタで配送費・包装料を設定した客先は、それぞれ伝票1枚ごと／総点数分の行が請求明細に追加されます。駐車場代ありの客先は、入力した回だけ「客先名 駐車場代」として別明細になります（いずれも伝票面には出ません）。</div></div>
+      <div class="help-step"><div class="help-step-num">内容</div><div class="help-step-body"><div class="help-step-title">シート構成</div>シート名は <code>客先名_YYYY年M月</code>。品名・単価・日別数量（最大14日分）・合計数・合計金額・小計・消費税10%・ご請求金額を含みます。<strong>客先マスタに登録した品目は、その月に数量がなくても行として表示</strong>されます（数量マスは空欄）。マスタで配送費・包装料を設定した客先は、それぞれ伝票1枚ごと／総点数分の行が請求明細に追加されます。駐車場代ありの客先は、入力した回だけ「客先名 駐車場代」として別明細になります（いずれも伝票面には出ません）。</div></div>
       <div class="help-note">💡 週2回程度の発行なら1店舗14伝票以内で問題ありません。14枚を超える客先は警告が出ます。</div>
       <div class="help-note">💡 品目が20行を超える客先は、画面・印刷とも2枚目以降に分割されます。合計金額は<strong>最終ページ</strong>に表示されます。</div>
       <div class="help-note">💡 対象は<strong>納品日 2026年8月1日以降</strong>の伝票のみです（7月以前は請求明細に載せません）。</div>
@@ -2025,11 +2025,24 @@ function buildMeisaiRows(data){
   const invoices=(data.invoices||[]).slice(0,14);
   const itemRows=[];
   const rowMap=new Map();
+  const ensureRow=(name,price)=>{
+    const p=Number(price)||0;
+    const key=String(name||'')+'|'+p;
+    let row=rowMap.get(key);
+    if(!row){row={name:name||'',price:p,qtys:Array(invoices.length).fill(0)};rowMap.set(key,row);itemRows.push(row);}
+    return row;
+  };
+  // 客先マスタの品目は数量0でも行として出す（駐車場代シートは除く）
+  if(!isParkingMeisai(data)){
+    const customer=data.customer||'';
+    (DB.clients[customer]?.items||[]).forEach(it=>{
+      if(!it||!it.name)return;
+      ensureRow(it.name,getBillingPrice(customer,it.code,it.name));
+    });
+  }
   invoices.forEach((inv,i)=>{
     (inv.items||[]).forEach(it=>{
-      const key=it.name+'|'+it.price;
-      let row=rowMap.get(key);
-      if(!row){row={name:it.name,price:Number(it.price)||0,qtys:Array(invoices.length).fill(0)};rowMap.set(key,row);itemRows.push(row);}
+      const row=ensureRow(it.name,it.price);
       row.qtys[i]=(row.qtys[i]||0)+(Number(it.qty)||0);
     });
   });
@@ -3154,6 +3167,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-11',type:'feat',text:'請求明細は客先マスタの品目を数量0でも行表示（画面・印刷・Excel共通）'},
   {date:'2026-09-09',type:'fix',text:'発行履歴から事務チェック表示を削除（請求タブのみに集約）'},
   {date:'2026-09-09',type:'fix',text:'Enter移動は単価／数量の列だけ縦に進む。品番・備考はスキップ（クリック時のみ）'},
   {date:'2026-09-09',type:'fix',text:'Enter移動は備考欄をスキップ（必要なときだけクリックして入力）'},
