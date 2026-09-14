@@ -77,6 +77,11 @@ h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,
 @media print{
   .no-print,#billing-check-section,#meisai-check-wrap,.check-cal{display:none!important}
 }
+body.viewer-ui #billing-check-section,
+body.viewer-ui #parking-fee-section,
+body.viewer-ui #billing-excel-section,
+body.viewer-ui #meisai-check-wrap,
+body.viewer-ui #billing-pending-view-btn{display:none!important}
 .main{flex:1;padding:0;max-width:1100px;margin:0 auto;width:100%;display:flex;flex-direction:column;overflow:hidden}
 .panel{display:none;flex:1;overflow:hidden}.panel.on{display:flex;flex-direction:column}
 #panel-slip.on{display:flex!important;flex-direction:column}
@@ -972,7 +977,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="help-section-body">
       <p>ネクサス担当者に<strong>専用URLとパスワード（閲覧専用）</strong>を伝えるだけで、請求明細書・請求額一覧を自分で確認・印刷してもらえます。Excelファイルのメール添付は不要になります。</p>
       <div class="help-step"><div class="help-step-num">特徴</div><div class="help-step-body"><div class="help-step-title">閲覧専用アカウントでできること</div>
-        <span class="help-tag">請求</span> タブのみ表示（<span class="help-tag">請求明細書を見る</span>・<span class="help-tag">請求額一覧を見る</span>）。<span class="help-tag">未反映分を見る</span>・使い方・伝票発行・マスタ管理・データ・Excel出力は非表示です。
+        <span class="help-tag">請求</span> タブのみ表示（<span class="help-tag">請求明細書を見る</span>・<span class="help-tag">請求額一覧を見る</span>）。<span class="help-tag">事務チェック</span>・<span class="help-tag">駐車場代入力</span>・<span class="help-tag">Excel出力</span>・<span class="help-tag">未反映分を見る</span>・使い方・伝票発行・マスタ管理・データは非表示です。
       </div></div>
       <div class="help-step"><div class="help-step-num">設定</div><div class="help-step-body"><div class="help-step-title">アカウントの追加方法</div>
         管理者でログイン → ヘッダー右上の <span class="help-tag">👥 ユーザー管理</span> → ユーザー名・パスワードを入力し、ロールを「<strong>閲覧専用（請求のみ）</strong>」に選択 → <span class="help-tag">追加</span>
@@ -2437,7 +2442,7 @@ function importJSON(e){const file=e.target.files[0];if(!file)return;const r=new 
 // ===== マスタ管理 =====
 function showPanel(id,btn){
   if((((currentUser&&currentUser.role==='viewer')||isNexusMode()))&&id!=='billing')return;
-  document.querySelectorAll('.panel').forEach(p=>{p.classList.remove('on');p.style.height='';});document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));const panel=document.getElementById('panel-'+id);panel.classList.add('on');const scrollPanels=['master','history','data','help','billing'];if(scrollPanels.includes(id)){const hdrH=document.querySelector('.hdr').offsetHeight;const tabH=document.querySelector('.tabs').offsetHeight;panel.style.height=(window.innerHeight-hdrH-tabH)+'px';}if(btn&&btn.classList)btn.classList.add('on');else{const tabs=[...document.querySelectorAll('.tabs .tab')];const map={slip:0,history:1,master:2,data:3,billing:4,help:5};if(map[id]!=null&&tabs[map[id]])tabs[map[id]].classList.add('on');}if(id==='billing'){renderParkingFeeCorner();syncCheckCalFromMeisai();renderBillingCheckCalendar();}}
+  document.querySelectorAll('.panel').forEach(p=>{p.classList.remove('on');p.style.height='';});document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));const panel=document.getElementById('panel-'+id);panel.classList.add('on');const scrollPanels=['master','history','data','help','billing'];if(scrollPanels.includes(id)){const hdrH=document.querySelector('.hdr').offsetHeight;const tabH=document.querySelector('.tabs').offsetHeight;panel.style.height=(window.innerHeight-hdrH-tabH)+'px';}if(btn&&btn.classList)btn.classList.add('on');else{const tabs=[...document.querySelectorAll('.tabs .tab')];const map={slip:0,history:1,master:2,data:3,billing:4,help:5};if(map[id]!=null&&tabs[map[id]])tabs[map[id]].classList.add('on');}if(id==='billing'){if(isViewerSession())applyViewerUi();else{renderParkingFeeCorner();syncCheckCalFromMeisai();renderBillingCheckCalendar();}}}
 function onMeisaiMonthChange(){renderParkingFeeCorner();syncCheckCalFromMeisai();renderBillingCheckCalendar();}
 function showCTab(id,btn){document.querySelectorAll('#m-panel-client .m-panel').forEach(p=>p.classList.remove('on'));document.querySelectorAll('#m-panel-client .m-tab').forEach(t=>t.classList.remove('on'));document.getElementById('c-panel-'+id).classList.add('on');if(btn)btn.classList.add('on');if(id==='new')renderCycBtns('nc-cyc-btns','nc-cyc','');}
 function showMTab(id,btn){document.querySelectorAll('.m-panel').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.m-tab').forEach(t=>t.classList.remove('on'));document.getElementById('m-panel-'+id).classList.add('on');btn.classList.add('on');if(id==='product'){renderProducts();setNPCode();}if(id==='group'){renderGroups();renderClientGrpList();}if(id==='client')setNC2();}
@@ -2865,6 +2870,7 @@ const NEXUS_SESSION_KEY='purims_nexus_session_v1';
 const NEXUS_SESSION_DAYS=30;
 
 function isNexusMode(){return APP_MODE==='nexus';}
+function isViewerSession(){return isNexusMode()||(currentUser&&currentUser.role==='viewer');}
 function clearNexusSession(){localStorage.removeItem(NEXUS_SESSION_KEY);}
 function saveNexusSession(user){
   if(!isNexusMode()||!user)return;
@@ -2886,6 +2892,7 @@ function loadNexusSession(){
   }
 }
 function resetRoleUi(){
+  document.body.classList.remove('viewer-ui');
   ['tab-slip','tab-history','tab-master','tab-data','tab-billing','tab-help'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.style.display='';
@@ -2904,6 +2911,7 @@ function resetRoleUi(){
   document.getElementById('tab-loginlog').style.display='none';
 }
 function applyViewerUi(){
+  document.body.classList.add('viewer-ui');
   ['tab-slip','tab-history','tab-master','tab-data','tab-help'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.style.display='none';
@@ -3167,6 +3175,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-14',type:'fix',text:'ネクサス閲覧では事務チェック・駐車場代入力・Excel出力を非表示に固定'},
   {date:'2026-09-11',type:'feat',text:'請求明細は客先マスタの品目を数量0でも行表示（画面・印刷・Excel共通）'},
   {date:'2026-09-09',type:'fix',text:'発行履歴から事務チェック表示を削除（請求タブのみに集約）'},
   {date:'2026-09-09',type:'fix',text:'Enter移動は単価／数量の列だけ縦に進む。品番・備考はスキップ（クリック時のみ）'},
@@ -3247,6 +3256,7 @@ function closeUpdatesModal(){document.getElementById('updates-modal')?.classList
 // ===== 【修正①】window.loadでのfbLoad呼び出しを削除 =====
 function applyNexusChrome(){
   if(!isNexusMode())return;
+  document.body.classList.add('viewer-ui');
   document.title='Purims ネクサス請求閲覧';
   const loginTitle=document.querySelector('.login-title');
   if(loginTitle)loginTitle.textContent='ネクサス 請求閲覧';
