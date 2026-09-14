@@ -913,7 +913,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">必要なら</div><div class="help-step-body"><div class="help-step-title">Excel で保存・印刷</div>ダウンロードした .xlsx を Excel で開く（取り込み操作なし）。印刷または所定フォルダに保存。</div></div>
       <div class="help-note">💡 <strong>未反映の伝票</strong> … <span class="help-tag">請求</span> タブの <span class="help-tag">未反映分を見る</span> や <span class="help-tag">未反映→請求明細Excel</span> で扱います（本日以前の分も含む）。Excel出力すると反映済みになり、同じ伝票は二重に出力されません。件数は <strong>2026年8月1日以降の納品</strong> のみです。7月以前は初回読み込み時に反映済み扱いになります。</div>
       <div class="help-note">💡 <strong>押し忘れた場合</strong> … 翌日（または後日）に <span class="help-tag">未反映→請求明細Excel</span> を押せば、未反映分を含む<strong>その請求月の全伝票</strong>がシートに載ります（前回分も消えない）。反映済みフラグは今回の未反映分にだけ付きます。<span class="help-tag">請求</span> タブの <span class="help-tag">請求月Excel出力</span> でも再出力できます。</div>
-      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは <strong>20日〆 → 25日〆 → 末日〆</strong>、同じ締めの中は客先名の番号が若い順（番号なしは先頭）。行クリックで明細へ。CSV 出力も可能です。</div>
+      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表と同じです。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なし（成田・六本木まんぷく・小学校・マキア相模原など）は後ろです。駐車場代は元の客先の直後。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。CSV 出力も可能です。</div>
       <div class="help-note">💡 毎回<strong>新しい Excel ファイル</strong>が作成されます。前日保存したファイルを Purims が自動更新することはありません。</div>
     </div>
   </div>
@@ -965,9 +965,9 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="help-section-body">
       <p>Purims がブラウザ内で請求明細書を<strong>直接表示・印刷・Excel出力</strong>します。運用 PC に Excel テンプレート（.xlsm）を置く必要はありません。印刷レイアウトは<strong>プゥル・ヴー伝票アプリと同じ書式</strong>です（ネクサス名義）。</p>
       <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。金額が入っている回だけ駐車場側が作られます。</div></div>
-      <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧で切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
+      <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧は紙の請求一覧表と同じ順（25日〆・末日〆の番号なしは後ろ）。クリックで切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。カレンダー左側には、<strong>チェック後に発行した分だけ</strong>「発行あり・客先名・納品日」が出ます。確認したら行のチェック（または <span class="help-tag">表示中を消す</span>）で一覧から消せます。</div></div>
-      <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">この客先を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span> → 用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。左上に客先名＋様、右上に小計・消費税・ご請求金額、下に品名・単価・納品日別数量の表（1ページ20行）です。</div></div>
+      <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。左上に客先名＋様、右上に小計・消費税・ご請求金額、下に品名・単価・納品日別数量の表（1ページ20行）です。</div></div>
       <div class="help-step"><div class="help-step-num">日次</div><div class="help-step-body"><div class="help-step-title">未反映→請求明細Excel</div>未反映の伝票（押し忘れ分を含む）を対象に、該当客先・請求月のシートを含む Excel を出力。ファイル名例: <code>purims_meisai_20250818.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">月次</div><div class="help-step-body"><div class="help-step-title">請求月Excel出力</div><span class="help-tag">請求</span> または <span class="help-tag">データ</span> タブで年月を指定して再出力。ファイル名例: <code>purims_meisai_202508.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">内容</div><div class="help-step-body"><div class="help-step-title">シート構成</div>シート名は <code>客先名_YYYY年M月</code>。品名・単価・日別数量（最大14日分）・合計数・合計金額・小計・消費税10%・ご請求金額を含みます。<strong>客先マスタに登録した品目は、その月に数量がなくても行として表示</strong>されます（数量マスは空欄）。マスタで配送費・包装料を設定した客先は、それぞれ伝票1枚ごと／総点数分の行が請求明細に追加されます。駐車場代ありの客先は、入力した回だけ「客先名 駐車場代」として別明細になります（いずれも伝票面には出ません）。</div></div>
@@ -1019,6 +1019,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <span id="meisai-viewer-period" style="font-size:13px;opacity:.9"></span>
       <span id="meisai-viewer-count" style="font-size:12px;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:10px"></span>
       <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" id="meisai-print-all-btn" onclick="printAllMeisaiSheets()" style="display:none;padding:6px 12px;background:#fff;color:#5c3d1e;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">🖨 全店舗を印刷</button>
         <button type="button" id="meisai-print-btn" onclick="printMeisaiViewerActive()" style="padding:6px 12px;background:#fff;color:#5c3d1e;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">🖨 印刷</button>
         <button type="button" id="meisai-csv-btn" onclick="exportMeisaiSummaryCSV()" style="display:none;padding:6px 12px;background:#fff;color:#5c3d1e;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">📥 CSV</button>
         <button type="button" onclick="closeMeisaiViewer()" style="padding:6px 12px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:6px;font-size:12px;cursor:pointer">閉じる</button>
@@ -1473,30 +1474,66 @@ function closingSortRank(day){
   if(day===99||!day)return 3;
   return 4;
 }
-/** 客先名先頭の番号。番号なしは先、番号ありは若い順 */
+/** 客先名先頭の番号。紙の表では番号なしが先頭の締めと、後ろの締めがある */
 function clientNameSortKey(name){
   const s=String(name||'');
   const m=s.match(/^[\s　]*(\d+)/);
   if(!m)return{hasNum:false,num:0,name:s};
   return{hasNum:true,num:parseInt(m[1],10)||0,name:s};
 }
-function compareClientName(a,b){
+/** 20日〆だけ番号なし先頭。25日〆・末日〆は番号のあと（119は末日の後ろ側） */
+function compareClientNameByClosing(a,b,closingDay){
   const ka=clientNameSortKey(a),kb=clientNameSortKey(b);
-  if(ka.hasNum!==kb.hasNum)return ka.hasNum?1:-1;
-  if(ka.hasNum&&ka.num!==kb.num)return ka.num-kb.num;
+  const numFirst=closingDay!==20;
+  if(ka.hasNum!==kb.hasNum)return numFirst?(ka.hasNum?-1:1):(ka.hasNum?1:-1);
+  const na=ka.hasNum&&ka.num===119?10000:ka.num;
+  const nb=kb.hasNum&&kb.num===119?10000:kb.num;
+  if(ka.hasNum&&na!==nb)return na-nb;
   return ka.name.localeCompare(kb.name,'ja');
+}
+function compareClientName(a,b){
+  return compareClientNameByClosing(a,b,20);
+}
+function billingNameKey(name){
+  return String(name||'').replace(/ 駐車場代$/,'').normalize('NFKC').replace(/[\s　]/g,'').replace(/^\d+/,'').toLowerCase();
+}
+/** 紙の請求一覧表と同じ店舗順（20日〆→25日〆→末日〆の中身） */
+const BILLING_LIST_ORDER=[
+  '楽園　町田店','楽園　相模原店','IVOホームズパスタトラットリア渋谷Part2','荒木山　東急プラザ渋谷店','ぬる燗佐藤　渋谷ヒカリエ','IVOホームズパスタトラットリア渋谷本店','炉端の佐藤　中目黒店','田町　鳥心',
+  '藤井茗縁','韓国大衆酒場　ラッキーソウル西新宿','茶茶花','ヘブンリー　代官山店','HEAVENLY　代官山店','わらやき屋　田町','ベルサイユの豚','馬並み家　田町','熱中屋　田町三田LIVE','美食米門　品川','YAKITORI STAND IPPON','goo　italiano　渋谷本店','goo　italiano　代々木上原','自由が丘まんぷく','代々木上原まんぷく','青山まんぷく','レッドペッパー　恵比寿','レッドペッパー　表参道','胡同　西麻布','穂のほまれ　西新宿店','さかえや　恵比寿','ちいかわラーメン　渋谷店','ローストビーフ大野　竹下口店','三軒茶屋病院','魚がし日本一　三田店','魚がし日本一　田町店','酒とシャケとサーモンズ','鴨ときどき馬　品川本店','バグース　町田東','隠れ房　町田','町田　yusoshi','魚がし日本一　成田空港店','六本木まんぷく',
+  'ジンギスカン羊一','比内亭　恵比寿','門','大豊記　恵比寿弐號房','大豊記　本館','大豊記　西新宿','鮨　はつめ','鮨　謙心','比内亭はなれ','やきとり　マルヒ','ＡＳＡＮＯＨＡ','寿司カレッジ東京','へぎそば清兵衛','ＧＣＣバグース　町田','天一　町田','マキア　町田店','境木小学校','中沢小学校','SCAPES THE SUITE','マキア　相模原店'
+];
+const BILLING_LIST_RANK=(()=>{const m=new Map();BILLING_LIST_ORDER.forEach((n,i)=>{const k=billingNameKey(n);if(k&&!m.has(k))m.set(k,i);});return m;})();
+function billingListRank(name){
+  const k=billingNameKey(name);
+  if(!k)return 10000;
+  if(BILLING_LIST_RANK.has(k))return BILLING_LIST_RANK.get(k);
+  if(k.length>=5){
+    let hit=-1,n=0;
+    BILLING_LIST_RANK.forEach((rank,key)=>{
+      if(key.length>=5&&(k.includes(key)||key.includes(k))){hit=rank;n++;}
+    });
+    if(n===1)return hit;
+  }
+  return 10000;
 }
 function sortMeisaiData(meisaiData){
   (meisaiData||[]).sort((a,b)=>{
-    const cr=closingSortRank(a.closingDay)-closingSortRank(b.closingDay);
-    if(cr)return cr;
     const ap=/ 駐車場代$/.test(a.customer||''),bp=/ 駐車場代$/.test(b.customer||'');
     const abase=ap?(a.customer||'').replace(/ 駐車場代$/,''):(a.customer||'');
     const bbase=bp?(b.customer||'').replace(/ 駐車場代$/,''):(b.customer||'');
-    const cn=compareClientName(abase,bbase);
-    if(cn)return cn;
+    const ra=billingListRank(abase),rb=billingListRank(bbase);
+    const aKnown=ra<10000,bKnown=rb<10000;
+    if(aKnown&&bKnown){
+      if(ra!==rb)return ra-rb;
+      if(ap!==bp)return ap?1:-1;
+      return (a.year-b.year)||(a.month-b.month);
+    }
+    if(aKnown!==bKnown)return aKnown?-1:1;
+    const cr=closingSortRank(a.closingDay)-closingSortRank(b.closingDay);
+    if(cr)return cr;
     if(ap!==bp)return ap?1:-1;
-    return (a.year-b.year)||(a.month-b.month);
+    return compareClientNameByClosing(abase,bbase,a.closingDay)||(a.year-b.year)||(a.month-b.month);
   });
   return meisaiData;
 }
@@ -2326,11 +2363,13 @@ function setMeisaiViewerMode(mode){
   const detWrap=document.getElementById('meisai-detail-wrap');
   const csvBtn=document.getElementById('meisai-csv-btn');
   const printBtn=document.getElementById('meisai-print-btn');
+  const printAllBtn=document.getElementById('meisai-print-all-btn');
   if(sumTab)sumTab.classList.toggle('on',_meisaiViewerMode==='summary');
   if(detTab)detTab.classList.toggle('on',_meisaiViewerMode==='detail');
   if(sumWrap){sumWrap.classList.toggle('on',_meisaiViewerMode==='summary');sumWrap.style.display=_meisaiViewerMode==='summary'?'block':'none';}
   if(detWrap)detWrap.style.display=_meisaiViewerMode==='detail'?'flex':'none';
   if(csvBtn)csvBtn.style.display=_meisaiViewerMode==='summary'?'inline-block':'none';
+  if(printAllBtn)printAllBtn.style.display=_meisaiViewerMode==='detail'?'inline-block':'none';
   if(printBtn)printBtn.textContent=_meisaiViewerMode==='summary'?'🖨 一覧を印刷':'🖨 この客先を印刷';
   if(_meisaiViewerMode==='summary')renderMeisaiSummary();
 }
@@ -2428,6 +2467,16 @@ function printMeisaiViewerSheet(){
   const sheet=document.getElementById('meisai-sheet-print');
   if(!sheet){toast('表示中の明細がありません','e');return;}
   openMeisaiPrintWindow('請求明細書',meisaiPrintStyles(),sheet.innerHTML);
+  toast('印刷ダイアログで「用紙の向き＝横」になっているか確認してください');
+}
+function printAllMeisaiSheets(){
+  if(!_meisaiViewerData.length){toast('印刷する明細がありません','e');return;}
+  if(!confirm(`${_meisaiViewerData.length}店舗の請求明細書を、紙の一覧表と同じ順で印刷します。続けますか？`))return;
+  const pages=_meisaiViewerData.map(d=>{
+    const html=meisaiSheetHtml(d);
+    return html.replace(/^<div id="meisai-sheet-print">/,'').replace(/<\/div>$/,'');
+  }).join('');
+  openMeisaiPrintWindow('請求明細書',meisaiPrintStyles(),`<div id="meisai-sheet-print">${pages}</div>`);
   toast('印刷ダイアログで「用紙の向き＝横」になっているか確認してください');
 }
 function printMeisaiSummary(){
@@ -3283,6 +3332,9 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-14',type:'fix',text:'請求の並びを紙の表に合わせた。20日〆だけ番号なしが先、25日〆・末日〆の番号なしは後ろ'},
+  {date:'2026-09-14',type:'fix',text:'請求明細書の左一覧・全店舗印刷・Excelを紙の請求一覧表と同じ店舗順にした'},
+  {date:'2026-09-14',type:'fix',text:'請求額一覧の並びを紙の請求一覧表と同じ店舗順にした'},
   {date:'2026-09-14',type:'feat',text:'事務チェック左側の発行ありは、行のチェックで一覧から消せる'},
   {date:'2026-09-14',type:'fix',text:'ネクサス閲覧では事務チェック・駐車場代入力・Excel出力を非表示に固定'},
   {date:'2026-09-11',type:'feat',text:'請求明細は客先マスタの品目を数量0でも行表示（画面・印刷・Excel共通）'},
