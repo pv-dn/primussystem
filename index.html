@@ -53,22 +53,24 @@ h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,
 .updates-tag.feat{background:#e8f0fe;color:#185fa5}
 .updates-tag.fix{background:#fdecea;color:#c0392b}
 .updates-text{color:var(--tx);flex:1}
-.check-cal{user-select:none;max-width:280px}
+.check-cal{user-select:none;max-width:340px}
 .check-cal-hd{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
 .check-cal-hd button{width:28px;height:28px;border:1px solid var(--b2);border-radius:6px;background:var(--w);cursor:pointer;font-size:14px;line-height:1;color:var(--tx)}
 .check-cal-title{font-size:13px;font-weight:700;color:var(--tx)}
 .check-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .check-cal-dow{text-align:center;font-size:10px;color:var(--mu);font-weight:600;padding:2px 0}
-.check-cal-day{aspect-ratio:1;border:none;border-radius:6px;background:transparent;cursor:pointer;font-size:12px;font-weight:600;color:var(--tx);padding:0;min-height:28px}
+.check-cal-day{aspect-ratio:auto;height:44px;border:none;border-radius:6px;background:transparent;cursor:pointer;font-size:12px;font-weight:600;color:var(--tx);padding:2px 1px 3px;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}
 .check-cal-day:hover{background:#e8f0fe}
 .check-cal-day.muted{color:#ccc;cursor:default}
 .check-cal-day.has-slip{background:#f0f4fa;border:1px solid #ccd6e8}
 .check-cal-day.checked{background:#c8e6c9;border:1px solid #81c784;color:#1b5e20}
 .check-cal-day.through{outline:2px solid #2e7d32;outline-offset:0}
 .check-cal-day.today{box-shadow:inset 0 0 0 1.5px var(--ac)}
+.check-cal-mark{display:block;margin-top:1px;font-size:8px;font-weight:800;letter-spacing:-.2px;color:#1565c0;white-space:nowrap;line-height:1.1}
+.check-cal-day.checked .check-cal-mark{color:#0d5c2e}
 .check-cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:var(--mu)}
 .check-cal-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
-.check-cal-note{font-size:11px;color:var(--mu);line-height:1.55;margin-top:8px;max-width:280px}
+.check-cal-note{font-size:11px;color:var(--mu);line-height:1.55;margin-top:8px;max-width:340px}
 .check-closing-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .check-closing-tab{padding:6px 12px;border:1.5px solid #81c784;border-radius:8px;background:#fff;color:#1b5e20;font-size:12px;font-weight:700;cursor:pointer}
 .check-closing-tab:hover{background:#e8f5e9}
@@ -472,7 +474,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div>
         <div id="billing-check-closing-tabs" class="check-closing-tabs"></div>
         <div id="billing-check-cal" class="check-cal"></div>
-        <div class="check-cal-note" id="billing-check-cal-note">薄い青＝その締めの納品あり　／　緑＝チェック済　／　枠＝境界日<br>クリックした納品日「まで」が対象です（印刷には出ません）</div>
+        <div class="check-cal-note" id="billing-check-cal-note">薄い青＝その締めの納品あり　／　緑＝チェック済　／　枠＝境界日<br>日付の下の「発行あり」＝発行履歴がある日です（印刷には出ません）</div>
       </div>
     </div>
   </div>
@@ -915,7 +917,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">間違えたとき</div>完了直後なら <span class="help-tag">入力に戻る（発行取消）</span>。すでに発行済みで数量を直す場合は <span class="help-tag">発行履歴</span> を開き <span class="help-tag">訂正して再発行</span>。</div></div>
       <div class="help-step"><div class="help-step-num">注意</div><div class="help-step-body"><div class="help-step-title">同じ納品日の再打ち込みは不可</div>同じ客先・同じ納品日の伝票が既にあると、<strong>新規の打ち直し発行はできません</strong>。警告から案内どおり <span class="help-tag">発行履歴</span> → <span class="help-tag">訂正して再発行</span> で数量を直します。訂正すると履歴に「訂正再発行」と日時が残ります。</div></div>
       <div class="help-step"><div class="help-step-num">履歴</div><div class="help-step-body"><div class="help-step-title">まとめて再印刷</div><span class="help-tag">発行履歴</span>（発行日別は <strong>月 → 日付</strong> のフォルダ）で伝票左のチェックを入れ → <span class="help-tag">選択した伝票をまとめて印刷</span>。1件だけなら明細内の <span class="help-tag">伝票印刷</span> でも再発行できます。</div></div>
-      <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">発行伝票のチェック済み</div><span class="help-tag">請求</span> タブでまず<strong>締め日</strong>（20日〆／25日〆／末日〆）を選び、ミニカレンダー（または請求明細書ビューア左上）の<strong>納品日</strong>をクリックすると、その締めのその日以前を事務確認済みとして記録します。チェック済みは締め日ごとに別管理。「○○〆 チェック済み: 納品日 ○○まで」と表示。同じ客先・納品日で新規発行しようとしたとき、チェック済み期間なら警告文にその旨が出ます。</div></div>
+      <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">発行伝票のチェック済み</div><span class="help-tag">請求</span> タブでまず<strong>締め日</strong>（20日〆／25日〆／末日〆）を選び、ミニカレンダー（または請求明細書ビューア左上）の<strong>納品日</strong>をクリックすると、その締めのその日以前を事務確認済みとして記録します。チェック済みは締め日ごとに別管理。「○○〆 チェック済み: 納品日 ○○まで」と表示。発行した日はマスの余白に<strong>発行あり</strong>と出るので、チェック済（緑）でも履歴の有無が分かります。同じ客先・納品日で新規発行しようとしたとき、チェック済み期間なら警告文にその旨が出ます。</div></div>
       <div class="help-note">💡 <strong>Enter</strong>：数量は次の数量へ、請求単価は次の単価へ（列の縦移動）。品番・備考は通常スキップ（必要なときだけクリック）。</div>
       <div class="help-note">💡 データはクラウド（Firebase）に自動保存されます。別のPCで開いても同じデータが表示されます。</div>
       <div class="help-note">💡 <strong>発行履歴の保存期間は6か月</strong>です（納品日基準）。6か月を超えた伝票はアプリ起動・クラウド読み込み時に自動削除されます。必要な分は事前にCSV/請求Excelで保存してください。</div>
@@ -954,7 +956,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <p>Purims がブラウザ内で請求明細書を<strong>直接表示・印刷・Excel出力</strong>します。運用 PC に Excel テンプレート（.xlsm）を置く必要はありません。印刷レイアウトは<strong>プゥル・ヴー伝票アプリと同じ書式</strong>です（ネクサス名義）。</p>
       <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。金額が入っている回だけ駐車場側が作られます。</div></div>
       <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧で切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
-      <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。</div></div>
+      <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑、発行履歴がある日はマスの余白に<strong>発行あり</strong>と表示されます。</div></div>
       <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">この客先を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span> → 用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。左上に客先名＋様、右上に小計・消費税・ご請求金額、下に品名・単価・納品日別数量の表（1ページ20行）です。</div></div>
       <div class="help-step"><div class="help-step-num">日次</div><div class="help-step-body"><div class="help-step-title">未反映→請求明細Excel</div>未反映の伝票（押し忘れ分を含む）を対象に、該当客先・請求月のシートを含む Excel を出力。ファイル名例: <code>purims_meisai_20250818.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">月次</div><div class="help-step-body"><div class="help-step-title">請求月Excel出力</div><span class="help-tag">請求</span> または <span class="help-tag">データ</span> タブで年月を指定して再出力。ファイル名例: <code>purims_meisai_202508.xlsx</code></div></div>
@@ -1024,7 +1026,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
           <div id="meisai-check-closing-tabs" class="check-closing-tabs"></div>
           <div id="meisai-check-status" style="font-size:11px;color:#1b5e20;font-weight:600;margin-bottom:6px">チェック済み: 未設定</div>
           <div id="meisai-check-cal" class="check-cal"></div>
-          <div class="check-cal-note" id="meisai-check-cal-note">締め日を選んでから納品日をクリック<br>青＝その締めの納品／緑＝済（印刷には出ません）</div>
+          <div class="check-cal-note" id="meisai-check-cal-note">締め日を選んでから納品日をクリック<br>青＝納品／緑＝済／下の文字＝発行あり</div>
         </div>
         <input type="search" id="meisai-viewer-search" placeholder="客先を検索…" oninput="renderMeisaiViewerList()">
         <div class="meisai-viewer-list" id="meisai-viewer-list"></div>
@@ -1385,6 +1387,7 @@ function showPrev(){
   }
   _issueSession={fp,histId,queued,isCorrection,prevEntry};
   updateBillingPendingBadge();
+  if(typeof renderBillingCheckCalendar==='function')renderBillingCheckCalendar();
   if(isCorrection)toast('訂正再発行しました');
   if(addedToMaster.length)toast('📋 マスタに追加: '+addedToMaster.join('、'));
 }
@@ -1630,8 +1633,9 @@ function renderBillingCheckCalendar(){
     if(checked)cls+=' checked';
     if(isThrough)cls+=' through';
     if(isToday)cls+=' today';
-    const title=key+' '+closingCheckLabel(closing)+(has?'（納品あり）':'')+(checked?' チェック済':'');
-    cells+='<button type="button" class="'+cls+'" title="'+title+'" onclick="setSlipCheckedThrough(\''+key+'\')">'+d+'</button>';
+    const title=key+' '+closingCheckLabel(closing)+(has?'（発行履歴あり）':'')+(checked?' チェック済':'');
+    const mark=has?'<span class="check-cal-mark">発行あり</span>':'';
+    cells+='<button type="button" class="'+cls+'" title="'+title+'" onclick="setSlipCheckedThrough(\''+key+'\')">'+d+mark+'</button>';
   }
   const period=billingPeriodHint(y,m,closing);
   const html='<div class="check-cal-hd"><button type="button" onclick="shiftCheckCal(-1)" aria-label="前月">‹</button><div class="check-cal-title">'+closingCheckLabel(closing)+'　'+y+'年'+m+'月</div><button type="button" onclick="shiftCheckCal(1)" aria-label="翌月">›</button></div><div class="check-cal-grid">'+cells+'</div><div class="check-cal-legend"><span><i style="background:#f0f4fa;border:1px solid #ccd6e8"></i>納品あり</span><span><i style="background:#c8e6c9;border:1px solid #81c784"></i>チェック済</span><span><i style="outline:2px solid #2e7d32"></i>境界日</span></div>';
@@ -1639,7 +1643,7 @@ function renderBillingCheckCalendar(){
   ['billing-check-cal','meisai-check-cal'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.innerHTML=html;
   });
-  const note='薄い青＝'+closingCheckLabel(closing)+'の納品あり　／　緑＝チェック済　／　枠＝境界日<br>請求期間の目安: '+period+'<br>クリックした納品日「まで」が対象です（印刷には出ません）';
+  const note='薄い青＝'+closingCheckLabel(closing)+'の納品あり　／　緑＝チェック済　／　枠＝境界日<br>日付の下の「発行あり」＝発行履歴がある日です<br>請求期間の目安: '+period+'<br>クリックした納品日「まで」が対象です（印刷には出ません）';
   ['billing-check-cal-note','meisai-check-cal-note'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.innerHTML=note;
   });
@@ -3175,6 +3179,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-14',type:'feat',text:'事務チェックカレンダーで、発行履歴がある日はマスの余白に「発行あり」と表示'},
   {date:'2026-09-14',type:'fix',text:'ネクサス閲覧では事務チェック・駐車場代入力・Excel出力を非表示に固定'},
   {date:'2026-09-11',type:'feat',text:'請求明細は客先マスタの品目を数量0でも行表示（画面・印刷・Excel共通）'},
   {date:'2026-09-09',type:'fix',text:'発行履歴から事務チェック表示を削除（請求タブのみに集約）'},
