@@ -1117,19 +1117,30 @@ let printMode=localStorage.getItem('purims_printmode')||'single',printQueue=[];
 let _issueSession=null,_lastAppliedSavedAt=null,_selfSaveTokens=new Set();
 let _correctingHistId=null;
 
-function newHistId(){newHistId._n=(newHistId._n||0)+1;return Date.now()*1000+(newHistId._n%1000);}
+function newHistId(){newHistId._n=(newHistId._n||0)+1;return String(Date.now())+String(newHistId._n%1000).padStart(3,'0');}
+function histIdEq(a,b){if(a==null||b==null)return false;return String(a)===String(b);}
+function findHistById(id){if(id==null||id==='')return null;return (DB.history||[]).find(h=>histIdEq(h.id,id))||null;}
 function slipFingerprint(client,ds,items){const body=[...(items||[])].map(it=>[it.code||'',it.name||'',Number(it.qty)||0,it.biko||''].join(':')).sort().join('|');return String(client||'')+'\t'+String(ds||'')+'\t'+body;}
 function deliveryDateMatchKey(ds){const d=parseDeliveryDate(ds);return d?(d.y+'/'+d.m+'/'+d.d):String(ds||'').trim();}
-function findHistByClientDelivery(client,ds){const key=deliveryDateMatchKey(ds);if(!client||!key)return null;return (DB.history||[]).find(h=>h.client===client&&deliveryDateMatchKey(h.deliveryDate)===key)||null;}
-function findDuplicateHist(client,ds,items){const fp=slipFingerprint(client,ds,items);return (DB.history||[]).find(h=>slipFingerprint(h.client,h.deliveryDate,h.items||[])===fp)||null;}
+function findHistByClientDelivery(client,ds){
+  const key=deliveryDateMatchKey(ds);
+  if(!client||!key)return null;
+  const c=String(client);
+  return (DB.history||[]).find(h=>{
+    if(String(h&&h.client||'')!==c)return false;
+    const hk=deliveryDateMatchKey(typeof historyDeliveryDate==='function'?historyDeliveryDate(h):(h&&h.deliveryDate));
+    return hk===key;
+  })||null;
+}
+function findDuplicateHist(client,ds,items){const fp=slipFingerprint(client,ds,items);return (DB.history||[]).find(h=>slipFingerprint(h.client,typeof historyDeliveryDate==='function'?historyDeliveryDate(h):h.deliveryDate,h.items||[])===fp)||null;}
 function updateCorrectionBanner(){
   const ban=document.getElementById('correct-banner');
   const txt=document.getElementById('correct-banner-text');
   if(!ban)return;
   if(_correctingHistId==null){ban.style.display='none';return;}
-  const h=(DB.history||[]).find(x=>x.id===_correctingHistId);
+  const h=findHistById(_correctingHistId);
   ban.style.display='flex';
-  if(txt)txt.textContent=h?(escH(h.client)+'　／　納品日 '+escH(h.deliveryDate||'')+'　→ 数量を直して「伝票発行」'):'履歴を読み込み中';
+  if(txt)txt.textContent=h?(escH(h.client)+'　／　納品日 '+escH(historyDeliveryDate(h)||h.deliveryDate||'')+'　→ 数量を直して「伝票発行」'):'履歴を読み込み中';
 }
 function cancelHistCorrect(){
   _correctingHistId=null;
@@ -1137,7 +1148,7 @@ function cancelHistCorrect(){
   toast('訂正再発行をやめました');
 }
 function startHistCorrect(id){
-  const h=(DB.history||[]).find(r=>r.id===id);
+  const h=findHistById(id);
   if(!h){toast('履歴が見つかりません','e');return;}
   if(!DB.clients[h.client]){toast('客先マスタに「'+h.client+'」がありません','e');return;}
   _issueSession=null;
@@ -1146,7 +1157,7 @@ function startHistCorrect(id){
   document.getElementById('csel').value=h.client;
   curC=h.client;
   qtys={};bikos={};extraItems=[];
-  const d=parseDeliveryDate(h.deliveryDate);
+  const d=parseDeliveryDate(historyDeliveryDate(h)||h.deliveryDate);
   if(d){
     customDeliveryDate=new Date(d.y,d.m-1,d.d);
     const ndv=document.getElementById('nd-v');
@@ -1289,7 +1300,7 @@ function changeZoom(dir){zoomIdx=Math.max(0,Math.min(ZOOM_STEPS.length-1,zoomIdx
 function clearPrintQueue(){if(!printQueue.length){toast('キューは空です');return;}if(!confirm('キューの '+printQueue.length+' 件を削除してよいですか？'))return;printQueue=[];updateQueueBadge();toast('クリアしました');}
 function doBatchPrint(){if(!printQueue.length){toast('キューが空です','e');return;}const combined=printQueue.map((item,idx)=>{// 最後の伝票以外はpage-break-afterを確実に付ける
   if(idx<printQueue.length-1){return item.html.replace(/slip-page-wrap:last-child[^}]*}/g,'').replace(/break-after:avoid/g,'break-after:page');}return item.html;}).join('');openPrintWindow(combined);const c=printQueue.length;printQueue=[];updateQueueBadge();toast(c+'件をまとめて印刷しました');}
-function printHist(id){const h=DB.history.find(r=>r.id===id);if(!h)return;openPrintWindow(buildSlipHTML(h.items,h.client,h.deliveryDate));}
+function printHist(id){const h=findHistById(id);if(!h)return;openPrintWindow(buildSlipHTML(h.items,h.client,historyDeliveryDate(h)||h.deliveryDate));}
 function showPrev(){
   if(!curC){toast('客先を選択してください','e');return;}
   const masterItems=(DB.clients[curC]?.items||[]).map((it,i)=>({...it,qty:qtys[i]||0,biko:bikos[i]||''})).filter(it=>it.qty>0);
@@ -1308,9 +1319,9 @@ function showPrev(){
     return;
   }
   const correctingId=_correctingHistId;
-  const correctingHist=correctingId!=null?(DB.history||[]).find(h=>h.id===correctingId):null;
+  const correctingHist=correctingId!=null?findHistById(correctingId):null;
   const sameDayHist=findHistByClientDelivery(curC,ds);
-  if(sameDayHist&&(!correctingHist||sameDayHist.id!==correctingHist.id)){
+  if(sameDayHist&&(!correctingHist||!histIdEq(sameDayHist.id,correctingHist.id))){
     const checkedNote=isHistDeliveryChecked(sameDayHist)?'\n※チェック済み期間の伝票です':'';
     const go=confirm('同じ客先・同じ納品日の伝票が既にあります。\n新しく打ち直しての発行はできません。\n\n客先: '+curC+'\n納品日: '+ds+(sameDayHist.date?'\n（既存の発行日: '+sameDayHist.date+'）':'')+checkedNote+'\n\n発行履歴から訂正して再発行しますか？');
     if(go)startHistCorrect(sameDayHist.id);
@@ -1422,7 +1433,7 @@ function backToInput(){
     }
     if(sess.histId!=null){
       if(sess.isCorrection&&sess.prevEntry){
-        const idx=(DB.history||[]).findIndex(h=>h.id===sess.histId);
+        const idx=(DB.history||[]).findIndex(h=>histIdEq(h.id,sess.histId));
         if(idx>=0){
           DB.history[idx]=sess.prevEntry;
           persistHistoryLocal();
@@ -1434,7 +1445,7 @@ function backToInput(){
         updateCorrectionBanner();
         toast('訂正再発行を取り消して入力画面に戻ります');
       }else{
-        DB.history=DB.history.filter(h=>h.id!==sess.histId);
+        DB.history=(DB.history||[]).filter(h=>!histIdEq(h.id,sess.histId));
         persistHistoryLocal();
         fbDeleteHistoryEntry(sess.histId);
         renderHistory();
@@ -1613,8 +1624,9 @@ function getSlipCheckedAt(closingDay){
   return t>0?t:0;
 }
 function histIssuedAtMs(h){
-  const n=Number(h&&h.id);
-  if(n>1e14)return Math.floor(n/1000);
+  const raw=String(h&&h.id||'');
+  const n=Number(raw);
+  if(n>1e14)return Math.floor(n/1000); /* newHistId: Date.now()+3桁 or 旧Date.now()*1000 */
   if(n>1e11)return n;
   const p=typeof parseYMD==='function'?parseYMD(h&&h.date):0;
   return p||0;
@@ -1985,7 +1997,7 @@ function renderParkingFeeCorner(){
   recs.forEach(h=>{
     const fee=Number(h.parkingFee)>0?Number(h.parkingFee):'';
     const dd=h.deliveryDate||historyDeliveryDate(h)||'';
-    html+='<tr><td style="padding:8px;border-bottom:1px solid var(--bd)">'+dd+'</td><td style="padding:8px;border-bottom:1px solid var(--bd)"><input type="number" min="0" step="1" data-parking-id="'+h.id+'" value="'+fee+'" placeholder="なし" style="width:120px;padding:6px 8px;border:1.5px solid var(--b2);border-radius:6px;font-size:13px"></td></tr>';
+    html+='<tr><td style="padding:8px;border-bottom:1px solid var(--bd)">'+dd+'</td><td style="padding:8px;border-bottom:1px solid var(--bd)"><input type="number" min="0" step="1" data-parking-id="'+escH(String(h.id))+'" value="'+fee+'" placeholder="なし" style="width:120px;padding:6px 8px;border:1.5px solid var(--b2);border-radius:6px;font-size:13px"></td></tr>';
   });
   html+='</tbody></table></div>';
   list.innerHTML=html;
@@ -1996,8 +2008,8 @@ function saveAllParkingFees(){
   if(!inputs.length){toast('保存する行がありません','e');return;}
   let changed=0;
   inputs.forEach(inp=>{
-    const id=Number(inp.getAttribute('data-parking-id'));
-    const h=(DB.history||[]).find(x=>x.id===id);
+    const id=inp.getAttribute('data-parking-id');
+    const h=findHistById(id);
     if(!h)return;
     const v=parseInt(inp.value,10);
     const next=(!isNaN(v)&&v>0)?v:0;
@@ -2768,8 +2780,9 @@ function updateHistSelCount(){
   if(el)el.textContent=histSelectedIds.size;
 }
 function toggleHistSelect(id,checked){
-  if(checked)histSelectedIds.add(id);
-  else histSelectedIds.delete(id);
+  const key=String(id);
+  if(checked)histSelectedIds.add(key);
+  else histSelectedIds.delete(key);
   updateHistSelCount();
 }
 function clearHistSelection(){
@@ -2780,16 +2793,16 @@ function clearHistSelection(){
 }
 function selectAllVisibleHist(){
   const recs=histFiltered();
-  recs.forEach(h=>{if(h.id!=null)histSelectedIds.add(h.id);});
+  recs.forEach(h=>{if(h.id!=null)histSelectedIds.add(String(h.id));});
   renderHistory();
   toast(recs.length+'件を選択しました');
 }
 function printSelectedHist(){
   if(!histSelectedIds.size){toast('伝票を選択してください','e');return;}
-  const items=[...histSelectedIds].map(id=>DB.history.find(h=>h.id===id)).filter(Boolean);
+  const items=[...histSelectedIds].map(id=>findHistById(id)).filter(Boolean);
   if(!items.length){toast('印刷できる伝票がありません','e');return;}
-  items.sort((a,b)=>parseYMD(b.deliveryDate||b.date)-parseYMD(a.deliveryDate||a.date)||(a.client||'').localeCompare(b.client||'','ja')||(Number(b.id)-Number(a.id)));
-  const htmlParts=items.map(h=>buildSlipHTML(h.items||[],h.client,h.deliveryDate));
+  items.sort((a,b)=>parseYMD(b.deliveryDate||b.date)-parseYMD(a.deliveryDate||a.date)||(a.client||'').localeCompare(b.client||'','ja')||String(b.id).localeCompare(String(a.id)));
+  const htmlParts=items.map(h=>buildSlipHTML(h.items||[],h.client,historyDeliveryDate(h)||h.deliveryDate));
   const combined=htmlParts.map((html,idx)=>{
     if(idx<htmlParts.length-1)return html.replace(/slip-page-wrap:last-child[^}]*}/g,'').replace(/break-after:avoid/g,'break-after:page');
     return html;
@@ -2801,13 +2814,15 @@ function escH(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 function setHistView(mode){histViewMode=mode==='client'?'client':'date';const d=document.getElementById('hist-tab-date'),c=document.getElementById('hist-tab-client');if(d)d.classList.toggle('on',histViewMode==='date');if(c)c.classList.toggle('on',histViewMode==='client');renderHistory();}
 function toggleHistFolder(encKey){const key=decodeURIComponent(encKey);histFolderCollapsed[key]=!histFolderCollapsed[key];renderHistory();}
 function histSlipHtml(h,byClient){
-  const open=openHistId===h.id;
+  const open=histIdEq(openHistId,h.id);
   const title=byClient?escH(h.date||''):escH(h.client||'');
   const corrected=!!h.correctedAt;
   const corrBadge=corrected?' <span style="display:inline-block;padding:1px 7px;border-radius:8px;background:#fff3cd;color:#854f0b;font-size:10px;font-weight:700;vertical-align:middle">訂正再発行</span>':'';
   const corrSub=corrected?('　｜　訂正: '+escH(h.correctedAt)+(h.correctedBy?' ('+escH(h.correctedBy)+')':'')+(h.correctionCount>1?' ×'+h.correctionCount:'')):'';
-  const sub=byClient?('納品: '+escH(h.deliveryDate||'')+'　｜　'+(h.items||[]).length+'品目'+(h.issuedBy?'　｜　発行者: '+escH(h.issuedBy):'')+corrSub):('納品: '+escH(h.deliveryDate||'')+'　｜　'+(h.items||[]).length+'品目'+(h.issuedBy?'　｜　発行者: '+escH(h.issuedBy):'')+corrSub);
-  return `<div style="background:var(--w);border-bottom:0.5px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;background:${open?'var(--s)':'var(--w)'}" onclick="toggleHist(${h.id})"><label style="display:flex;align-items:center;flex-shrink:0;margin-right:4px;cursor:pointer" onclick="event.stopPropagation()"><input type="checkbox" ${histSelectedIds.has(h.id)?'checked':''} onchange="toggleHistSelect(${h.id},this.checked)" style="width:16px;height:16px;cursor:pointer" aria-label="印刷対象に選択"></label><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">${title}${corrBadge}</div><div style="font-size:11px;color:var(--mu);margin-top:2px">${sub}</div></div><div style="display:flex;align-items:center;gap:10px"><span style="background:var(--nv);color:#fff;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:600">合計 ${h.total}点</span><span style="font-size:14px;color:var(--mu);display:inline-block;transform:rotate(${open?'180':'0'}deg)">▼</span></div></div><div style="display:${open?'block':'none'};padding:14px 16px;background:var(--s);border-top:0.5px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div style="font-size:12px;color:var(--mu);line-height:1.8"><strong style="color:var(--tx);font-size:13px">${escH(h.client)}</strong><br>発行日: ${escH(h.date)}　｜　納品日: ${escH(h.deliveryDate)}${h.issuedBy?'　｜　発行者: <strong style="color:var(--nv);">'+escH(h.issuedBy)+'</strong>':''}${corrected?'<br><span style="color:#854f0b;font-weight:600">訂正再発行: '+escH(h.correctedAt)+(h.correctedBy?'（'+escH(h.correctedBy)+'）':'')+(h.correctionCount>1?'　'+h.correctionCount+'回目':'')+'</span>':''}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn acc" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();startHistCorrect(${h.id})">訂正して再発行</button><button class="btn" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();dlHistCSV(${h.id})">CSV出力</button><button class="btn pri" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();printHist(${h.id})">伝票印刷</button><button class="btn ng" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();delHist(${h.id})">削除</button></div></div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:left;font-weight:500;width:18%">品番</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:left;font-weight:500">品目名</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:right;font-weight:500;width:80px">数量</th></tr></thead><tbody>${(h.items||[]).map(it=>`<tr><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)"><span class="cbdg">${escH(it.code)}</span></td><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)">${escH(it.name)}</td><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;font-weight:700">${it.qty}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="2" style="background:var(--w);padding:8px 10px;font-weight:700;border-top:2px solid var(--b2)">合計</td><td style="background:var(--w);padding:8px 10px;font-weight:700;text-align:right;border-top:2px solid var(--b2);font-size:15px;color:var(--nv)">${h.total}点</td></tr></tfoot></table></div></div>`;
+  const deliv=escH(historyDeliveryDate(h)||h.deliveryDate||'');
+  const sub=byClient?('納品: '+deliv+'　｜　'+(h.items||[]).length+'品目'+(h.issuedBy?'　｜　発行者: '+escH(h.issuedBy):'')+corrSub):('納品: '+deliv+'　｜　'+(h.items||[]).length+'品目'+(h.issuedBy?'　｜　発行者: '+escH(h.issuedBy):'')+corrSub);
+  const idLit=JSON.stringify(String(h.id));
+  return `<div style="background:var(--w);border-bottom:0.5px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;background:${open?'var(--s)':'var(--w)'}" onclick="toggleHist(${idLit})"><label style="display:flex;align-items:center;flex-shrink:0;margin-right:4px;cursor:pointer" onclick="event.stopPropagation()"><input type="checkbox" ${histSelectedIds.has(String(h.id))?'checked':''} onchange="toggleHistSelect(${idLit},this.checked)" style="width:16px;height:16px;cursor:pointer" aria-label="印刷対象に選択"></label><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">${title}${corrBadge}</div><div style="font-size:11px;color:var(--mu);margin-top:2px">${sub}</div></div><div style="display:flex;align-items:center;gap:10px"><span style="background:var(--nv);color:#fff;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:600">合計 ${h.total}点</span><span style="font-size:14px;color:var(--mu);display:inline-block;transform:rotate(${open?'180':'0'}deg)">▼</span></div></div><div style="display:${open?'block':'none'};padding:14px 16px;background:var(--s);border-top:0.5px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div style="font-size:12px;color:var(--mu);line-height:1.8"><strong style="color:var(--tx);font-size:13px">${escH(h.client)}</strong><br>発行日: ${escH(h.date)}　｜　納品日: ${deliv}${h.issuedBy?'　｜　発行者: <strong style="color:var(--nv);">'+escH(h.issuedBy)+'</strong>':''}${corrected?'<br><span style="color:#854f0b;font-weight:600">訂正再発行: '+escH(h.correctedAt)+(h.correctedBy?'（'+escH(h.correctedBy)+'）':'')+(h.correctionCount>1?'　'+h.correctionCount+'回目':'')+'</span>':''}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn acc" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();startHistCorrect(${idLit})">訂正して再発行</button><button class="btn" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();dlHistCSV(${idLit})">CSV出力</button><button class="btn pri" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();printHist(${idLit})">伝票印刷</button><button class="btn ng" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();delHist(${idLit})">削除</button></div></div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:left;font-weight:500;width:18%">品番</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:left;font-weight:500">品目名</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:right;font-weight:500;width:80px">数量</th></tr></thead><tbody>${(h.items||[]).map(it=>`<tr><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)"><span class="cbdg">${escH(it.code)}</span></td><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)">${escH(it.name)}</td><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;font-weight:700">${it.qty}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="2" style="background:var(--w);padding:8px 10px;font-weight:700;border-top:2px solid var(--b2)">合計</td><td style="background:var(--w);padding:8px 10px;font-weight:700;text-align:right;border-top:2px solid var(--b2);font-size:15px;color:var(--nv)">${h.total}点</td></tr></tfoot></table></div></div>`;
 }
 function histFiltered(){const q=(document.getElementById('hist-search')?.value||'').trim().toLowerCase();if(!q)return DB.history||[];return (DB.history||[]).filter(h=>[h.client,h.date,h.deliveryDate,h.issuedBy,...((h.items||[]).flatMap(it=>[it.code,it.name]))].some(v=>String(v||'').toLowerCase().includes(q)));}
 function histMonthLabel(dateStr){
@@ -2882,9 +2897,9 @@ function renderHistory(){
   }).join('');
 }
 
-function toggleHist(id){openHistId=openHistId===id?null:id;renderHistory();}
-function delHist(id){if(!confirm('この履歴を削除しますか？'))return;DB.history=DB.history.filter(h=>h.id!==id);histSelectedIds.delete(id);persistHistoryLocal();if(openHistId===id)openHistId=null;renderHistory();fbDeleteHistoryEntry(id);toast('削除しました');}
-function dlHistCSV(id){const h=DB.history.find(r=>r.id===id);if(!h)return;let rows=[['客先名','納品日','品番','品目名','数量']];h.items.forEach(it=>rows.push([h.client,h.deliveryDate,it.code,it.name,it.qty]));dlFile(rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n'),`purims_${h.client}_${h.date.replace(/\//g,'-')}.csv`,'text/csv');toast('CSVをダウンロードしました');}
+function toggleHist(id){openHistId=histIdEq(openHistId,id)?null:id;renderHistory();}
+function delHist(id){if(!confirm('この履歴を削除しますか？'))return;DB.history=(DB.history||[]).filter(h=>!histIdEq(h.id,id));histSelectedIds.delete(String(id));persistHistoryLocal();if(histIdEq(openHistId,id))openHistId=null;renderHistory();fbDeleteHistoryEntry(id);toast('削除しました');}
+function dlHistCSV(id){const h=findHistById(id);if(!h)return;let rows=[['客先名','納品日','品番','品目名','数量']];h.items.forEach(it=>rows.push([h.client,historyDeliveryDate(h)||h.deliveryDate,it.code,it.name,it.qty]));dlFile(rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n'),`purims_${h.client}_${String(h.date||'').replace(/\//g,'-')}.csv`,'text/csv');toast('CSVをダウンロードしました');}
 function clearHist(){if(!confirm('全履歴を削除しますか？'))return;DB.history=[];openHistId=null;histSelectedIds.clear();persistHistoryLocal();renderHistory();fbClearHistory();toast('履歴を削除しました');}
 
 // ===== ヘルプ =====
@@ -2935,9 +2950,10 @@ function fbSave(){
 }
 
 function fbSaveHistoryEntry(entry){
-  if(!currentUser||!entry||entry.id==null)return;
+  if(!currentUser||!entry||entry.id==null||entry.id==='')return;
   const tok=markSelfSaving();
-  db.ref(histPath(entry.id)).set(entry)
+  const saved=sanitizeForFirebase(Object.assign({},entry,{id:String(entry.id)}));
+  db.ref(histPath(saved.id)).set(saved)
     .catch(e=>toast('履歴保存失敗: '+e.message,'e'))
     .finally(()=>setTimeout(()=>clearSelfSaving(tok),800));
 }
@@ -2960,8 +2976,21 @@ let _fbListeners=[];
 
 function parseHistory(raw){
   if(!raw)return[];
-  const arr=Array.isArray(raw)?raw:Object.values(raw);
-  return arr.filter(Boolean).sort((a,b)=>(Number(b.id)||0)-(Number(a.id)||0));
+  let arr;
+  if(Array.isArray(raw)){
+    arr=raw.filter(Boolean).map(h=>{
+      if(!h||typeof h!=='object')return null;
+      const id=h.id!=null&&h.id!==''?String(h.id):String(newHistId());
+      return Object.assign({},h,{id});
+    }).filter(Boolean);
+  }else{
+    arr=Object.entries(raw).map(([k,h])=>{
+      if(!h||typeof h!=='object')return null;
+      const id=(h.id!=null&&h.id!=='')?String(h.id):String(k);
+      return Object.assign({},h,{id});
+    }).filter(Boolean);
+  }
+  return arr.sort((a,b)=>String(b.id).localeCompare(String(a.id),'en'));
 }
 
 /** 旧形式（配列）をIDキーのオブジェクトへ一度だけ移行 */
@@ -3039,14 +3068,15 @@ function fbStartListeners(){
     toast("☁️ 他のPCでマスタが更新されました");
   });
   const onHist=refHist.on("value",snap=>{
-    if(skipHist)return;
+    if(skipHist||_isSelfSaving)return;
     const hist=parseHistory(snap.val());
     DB.history=hist;
     pruneExpiredHistory({quiet:true});
     persistHistoryLocal();
     renderHistory();
     updateBillingPendingBadge();
-    if(!_isSelfSaving)toast("☁️ 他のPCで履歴が更新されました");
+    if(_correctingHistId!=null)updateCorrectionBanner();
+    toast("☁️ 他のPCで履歴が更新されました");
   });
   _fbListeners=[{ref:refData,fn:onData},{ref:refHist,fn:onHist}];
 }
@@ -3369,6 +3399,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-16',type:'fix',text:'同一納品日ロックと訂正再発行を修正（履歴の照合ずれで警告・訂正が出ない不具合）'},
   {date:'2026-09-16',type:'fix',text:'請求の25日〆を店舗番号順に。215（熱中屋）・301（バグース町田東）が末尾に落ちないようにした'},
   {date:'2026-09-14',type:'fix',text:'請求の並びを紙の表に合わせた。20日〆だけ番号なしが先、25日〆・末日〆の番号なしは後ろ'},
   {date:'2026-09-14',type:'fix',text:'請求明細書の左一覧・全店舗印刷・Excelを紙の請求一覧表と同じ店舗順にした'},
