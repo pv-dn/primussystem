@@ -976,7 +976,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="help-section-hd" onclick="toggleHelp('billing')">📄 請求明細書（確認・Excel・印刷）<span class="help-toggle" id="help-toggle-billing">▶</span></div>
     <div class="help-section-body">
       <p>Purims がブラウザ内で請求明細書を<strong>直接表示・印刷・Excel出力</strong>します。運用 PC に Excel テンプレート（.xlsm）を置く必要はありません。印刷レイアウトは<strong>プゥル・ヴー伝票アプリと同じ書式</strong>です（ネクサス名義）。</p>
-      <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。紙の一覧で★の客先（茶茶花・楽園　町田店・穂のほまれ　西新宿店）は未設定でも駐車場行を出します（金額0でも行あり）。</div></div>
+      <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。駐車場明細書には<strong>金額を入れた日だけ</strong>出ます（空欄＝なしの日は数量も日付も出しません）。紙の★客先（茶茶花・楽園　町田店・穂のほまれ　西新宿店）は金額がなくても駐車場のシート枠は残ります。</div></div>
       <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧は紙の請求一覧表と同じ順（25日〆・末日〆の番号なしは後ろ）。クリックで切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。カレンダー左側には、<strong>チェック後に発行した分だけ</strong>「発行あり・客先名・納品日」が出ます。確認したら行のチェック（または <span class="help-tag">表示中を消す</span>）で一覧から消せます。</div></div>
       <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。画面上はウィンドウに収まるよう自動で縮小表示します（印刷は実寸）。左の客先一覧は広めに表示。事務チェックは見出しクリックで開閉できます。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。</div></div>
@@ -1879,10 +1879,12 @@ function parkingBillingName(customer){return String(customer||'')+' 駐車場代
 function isParkingMeisai(data){return / 駐車場代$/.test(String(data&&data.customer||''));}
 function buildParkingInvoicesFromRecs(recs){
   const park=(recs||[]).filter(h=>Number(h.parkingFee)>0);
-  if(park.length)return park.slice(0,14).map((h,idx)=>({invoiceNo:String(idx+1),deliveryDate:historyDeliveryDate(h),items:[{name:'駐車場代',price:Number(h.parkingFee),qty:1}]}));
-  /* 駐車場代ありだが未入力でも一覧・明細に行を出す（紙の★と同じ） */
-  if(!(recs||[]).length)return null;
-  return[{invoiceNo:'1',deliveryDate:historyDeliveryDate(recs[0])||'',items:[{name:'駐車場代',price:0,qty:1}]}];
+  if(!park.length){
+    /* 金額なしの日は明細に出さない（数量1の仮表示もしない）。★客先のシート枠だけは空で残す */
+    if(!(recs||[]).length)return null;
+    return[];
+  }
+  return park.slice(0,14).map((h,idx)=>({invoiceNo:String(idx+1),deliveryDate:historyDeliveryDate(h),items:[{name:'駐車場代',price:Number(h.parkingFee),qty:1}]}));
 }
 function toHalfWidthDigits(s){return String(s).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0));}
 function parseDeliveryDate(str){if(str==null||str===''||str==='—')return null;const s=toHalfWidthDigits(String(str).trim());let m=s.match(/(\d{4})年(\d{1,2})月(\d{1,2})日?/);if(m)return{y:+m[1],m:+m[2],d:+m[3]};m=s.match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/);if(m)return{y:+m[1],m:+m[2],d:+m[3]};const p=s.split(/[\/.\-]/).map(Number);if(p.length>=3&&!isNaN(p[0])&&p[0]>1900)return{y:p[0],m:p[1],d:p[2]};return null;}
@@ -2074,7 +2076,7 @@ function pushCustomerSheets(meisaiData,customer,year,month,closingDay,recs){
   meisaiData.push({customer,year,month,closingDay,minCharge:getMinCharge(customer),invoices:buildInvoicesFromRecs(recs,customer,warnings)});
   if(isParkingEnabled(customer)){
     const parkInv=buildParkingInvoicesFromRecs(recs);
-    if(parkInv)meisaiData.push({customer:parkingBillingName(customer),year,month,closingDay,minCharge:0,invoices:parkInv});
+    if(parkInv!==null)meisaiData.push({customer:parkingBillingName(customer),year,month,closingDay,minCharge:0,invoices:parkInv});
   }
 }
 if(mode==='today'){const toMark=(DB.history||[]).filter(h=>!h.billingExportedAt&&isExportableHist(h));if(!toMark.length){const raw=(DB.history||[]).filter(h=>!h.billingExportedAt).length;if(raw)return{error:`未反映 ${raw}件ありますが、7月以前・納品日不明などで出力対象がありません`};return{error:'未反映の伝票がありません'};}const sheetKeys=new Map();toMark.forEach(h=>{const closingDay=parseClosingDay(DB.closing[h.client]||'');const bm=getBillingMonth(parseHistDeliveryDate(h),closingDay);if(!bm)return;const k=`${h.client}\0${bm.y}\0${bm.m}`;if(!sheetKeys.has(k))sheetKeys.set(k,{customer:h.client,year:bm.y,month:bm.m,closingDay});});const meisaiData=[];sheetKeys.forEach(({customer,year,month,closingDay})=>{const recs=(DB.history||[]).filter(h=>{if(h.client!==customer)return false;const d=parseHistDeliveryDate(h);if(!isBillingDeliveryInScope(d))return false;return belongsToBillingMonth(d,year,month,closingDay);}).sort(sortHistoryRecs);pushCustomerSheets(meisaiData,customer,year,month,closingDay,recs);});sortMeisaiData(meisaiData);if(!meisaiData.length)return{error:'請求データを作成できませんでした（締め日・納品日の組み合わせを確認してください）'};assignUniqueSheetNames(meisaiData);return{meisaiData,toMark,warnings};}const year=parseInt(opts?.year,10),month=parseInt(opts?.month,10);if(!year||!month||month<1||month>12)return{error:'請求月（年月）を指定してください'};if(year<BILLING_DELIVERY_MIN.y||(year===BILLING_DELIVERY_MIN.y&&month<BILLING_DELIVERY_MIN.m))return{error:`${year}年${month}月は請求対象外です（${BILLING_DELIVERY_MIN.y}年${BILLING_DELIVERY_MIN.m}月以降の納品のみ）`};if(!isBillingMonthWithinRetention(year,month))return{error:`${year}年${month}月は保存期間（${HISTORY_KEEP_MONTHS}か月）外です`};const meisaiData=[];Object.keys(DB.clients||{}).forEach(customer=>{const closingDay=parseClosingDay(DB.closing[customer]||'');const recs=(DB.history||[]).filter(h=>{if(h.client!==customer)return false;if(!isBillingDeliveryInScope(parseHistDeliveryDate(h)))return false;return belongsToBillingMonth(parseHistDeliveryDate(h),year,month,closingDay);}).sort(sortHistoryRecs);pushCustomerSheets(meisaiData,customer,year,month,closingDay,recs);});if(!meisaiData.length)return{error:`${year}年${month}月の請求データがありません`};sortMeisaiData(meisaiData);assignUniqueSheetNames(meisaiData);return{meisaiData,warnings};}
@@ -3759,6 +3761,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-16',type:'fix',text:'駐車場代が「なし」の日は請求明細書に数量1を出さないようにした'},
   {date:'2026-09-16',type:'fix',text:'請求明細書をスクロールなしで全体表示。左の客先一覧を広げ、事務チェックは折りたたみ式に'},
   {date:'2026-09-16',type:'feat',text:'請求明細書で数量あり・単価未設定のセルを黄色表示。単価を保存すると消える'},
   {date:'2026-09-16',type:'feat',text:'発行履歴に「削除履歴」を追加。削除・発行取消・期間超過の記録を残し、復元もできる'},
