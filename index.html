@@ -321,6 +321,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 .meisai-col-price{width:70px}
 .meisai-col-qty{width:56px}
 .meisai-col-amt{width:80px}
+.meisai-price-missing{background:#ffe566!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .meisai-sheet th,.meisai-sheet .meisai-table-wrap td{border:1px solid #222;padding:3px 4px;font-size:11px;white-space:nowrap;vertical-align:middle}
 .meisai-note{font-size:11px;color:#854f0b;margin-top:8px;line-height:1.4}
 .meisai-page-label{font-size:11px;color:#666;text-align:right;margin-bottom:6px}
@@ -960,7 +961,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">配送費（必要な客先のみ）</div>1回あたりの税抜配送費を入力。請求明細書では<strong>伝票1枚につき1回</strong>「配送費」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
       <div class="help-step"><div class="help-step-num">6</div><div class="help-step-body"><div class="help-step-title">包装料（必要な客先のみ）</div>1点あたりの税抜包装料を入力。請求明細書では<strong>その納品の総点数×単価</strong>で「包装料」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
       <div class="help-step"><div class="help-step-num">7</div><div class="help-step-body"><div class="help-step-title">駐車場代（必要な客先のみ）</div>「あり」にすると、請求タブの<strong>駐車場代入力</strong>でその客先を選べます。領収書を見て金額を入力（空＝その回なし）。請求では<strong>客先名 駐車場代</strong>として別明細になります。<strong>伝票には出ません。</strong></div></div>
-      <div class="help-warn">⚠️ 請求単価が未設定の品目は、請求明細で 0 円になり警告が出ます。</div>
+      <div class="help-warn">⚠️ 請求単価が未設定の品目は、請求明細で 0 円になり警告が出ます。数量があるのに単価がない行は、明細書の単価セルが<strong>黄色</strong>になります（マスタで単価を保存すると消えます）。</div>
     </div>
   </div>
   <div class="help-section help-collapsed" id="help-billing">
@@ -2163,7 +2164,10 @@ function setupMeisaiSheet(ws,data){
     data._pageItems.forEach(r=>{
       if(nextRow>44)return;
       ws.getCell(`A${nextRow}`).value=r.name;
-      ws.getCell(`B${nextRow}`).value=r.price;
+      ws.getCell(`B${nextRow}`).value=r.price||0;
+      if(r.priceMissing){
+        ws.getCell(`B${nextRow}`).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFE566'}};
+      }
       (r.qtys||[]).forEach((q,i)=>{if(q)ws.getCell(nextRow,3+i).value=q;});
       nextRow++;
     });
@@ -2265,21 +2269,32 @@ function buildMeisaiRows(data){
     if(!row){row={name:name||'',price:p,qtys:Array(invoices.length).fill(0)};rowMap.set(key,row);itemRows.push(row);}
     return row;
   };
+  const baseCustomer=String(data.customer||'').replace(/ 駐車場代$/,'');
+  const resolvePrice=(it)=>{
+    const name=it&&it.name||'';
+    if(name==='配送費'||name==='包装料'||name==='駐車場代')return Number(it.price)||0;
+    const live=getBillingPrice(baseCustomer,it.code,name);
+    if(live>0)return live;
+    return Number(it.price)||0;
+  };
   // 客先マスタの品目は数量0でも行として出す（駐車場代シートは除く）
   if(!isParkingMeisai(data)){
-    const customer=data.customer||'';
-    (DB.clients[customer]?.items||[]).forEach(it=>{
+    (DB.clients[baseCustomer]?.items||[]).forEach(it=>{
       if(!it||!it.name)return;
-      ensureRow(it.name,getBillingPrice(customer,it.code,it.name));
+      ensureRow(it.name,getBillingPrice(baseCustomer,it.code,it.name));
     });
   }
   invoices.forEach((inv,i)=>{
     (inv.items||[]).forEach(it=>{
-      const row=ensureRow(it.name,it.price);
+      const row=ensureRow(it.name,resolvePrice(it));
       row.qtys[i]=(row.qtys[i]||0)+(Number(it.qty)||0);
     });
   });
-  itemRows.forEach(r=>{r.totalQty=r.qtys.reduce((s,q)=>s+q,0);r.amount=r.price*r.totalQty;});
+  itemRows.forEach(r=>{
+    r.totalQty=r.qtys.reduce((s,q)=>s+q,0);
+    r.amount=r.price*r.totalQty;
+    r.priceMissing=r.totalQty>0&&!(Number(r.price)>0);
+  });
   const sum=itemRows.reduce((s,r)=>s+r.amount,0);
   const min=Number(data.minCharge)||0;
   const subtotal=min>0?Math.max(sum,min):sum;
@@ -2377,7 +2392,8 @@ function meisaiPrintStyles(){
     .meisai-col-name{width:18%}
     .meisai-col-price{width:8%}
     .meisai-col-qty{width:6%}
-    .meisai-col-amt{width:9%}`;
+    .meisai-col-amt{width:9%}
+    .meisai-price-missing{background:#ffe566!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}`;
 }
 const MEISAI_PAGE_ROWS=20;
 function meisaiSheetHtml(data){
@@ -2395,7 +2411,9 @@ function meisaiSheetHtml(data){
 
   const renderItemRow=(r)=>{
     const qtyCells=r.qtys.map(q=>`<td style="text-align:center">${q||''}</td>`).join('')+Array.from({length:Math.max(0,14-r.qtys.length)},()=>'<td></td>').join('');
-    return`<tr><td style="text-align:left">${escH(r.name)}</td><td style="text-align:right">${r.price?yenFmt(r.price):''}</td>${qtyCells}<td style="text-align:center">${r.totalQty||''}</td><td style="text-align:right">${r.amount?yenFmt(r.amount):''}</td></tr>`;
+    const priceCls=r.priceMissing?' class="meisai-price-missing"':'';
+    const priceTxt=r.price?yenFmt(r.price):(r.priceMissing?'未設定':'');
+    return`<tr><td style="text-align:left">${escH(r.name)}</td><td${priceCls} style="text-align:right"${r.priceMissing?' title="数量があるのに請求単価が未設定です"':''}>${priceTxt}</td>${qtyCells}<td style="text-align:center">${r.totalQty||''}</td><td style="text-align:right">${r.amount?yenFmt(r.amount):''}</td></tr>`;
   };
 
   const amtRows=(isLast)=>isLast?`
@@ -2752,7 +2770,15 @@ function saveMasterItems(){
   setMasterItemsDirty(false);
   persist();
   if(curC===editC){renderItems();updateChips();}
+  refreshOpenMeisaiViewerPrices();
   toast('請求単価・品目を保存しました');
+}
+function refreshOpenMeisaiViewerPrices(){
+  const viewer=document.getElementById('meisai-viewer');
+  if(!viewer||!viewer.classList.contains('open'))return;
+  if(!_meisaiViewerData||!_meisaiViewerData.length)return;
+  if(_meisaiViewerMode==='summary')renderMeisaiSummary();
+  else if(typeof _meisaiViewerIdx==='number')selectMeisaiViewer(_meisaiViewerIdx);
 }
 function renderMItems(){if(!editC)return;const items=DB.clients[editC]?.items||[];const wrap=document.getElementById('mitems');const bar=document.getElementById('mitems-save-bar');if(bar)bar.style.display='flex';if(!items.length){wrap.innerHTML='<div class="emp" style="padding:14px">品目がありません</div>';setMasterItemsDirty(masterItemsDirty);return;}wrap.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed" id="mitems-tbl"><thead><tr><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;font-weight:500;width:36px"></th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;font-weight:500;width:15%">品番</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;font-weight:500">品目名</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:right;font-weight:500;width:90px">請求単価</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:center;font-weight:500;width:15%">操作</th></tr></thead><tbody id="mitems-body">${items.map((it,i)=>`<tr draggable="true" data-idx="${i}"><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd);text-align:center;color:var(--mu);cursor:grab;font-size:16px;user-select:none">☰</td><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd)"><input class="enter-skip" data-field="code" style="width:100%;padding:5px 8px;border:0.5px solid var(--b2);border-radius:4px;font-size:12px;background:var(--w);color:var(--tx);font-family:monospace" value="${escH(it.code||'')}" oninput="upd(${i},'code',this.value)"></td><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd)"><input class="enter-skip" data-field="name" style="width:100%;padding:5px 8px;border:0.5px solid var(--b2);border-radius:4px;font-size:13px;background:var(--w);color:var(--tx)" value="${escH(it.name||'')}" oninput="upd(${i},'name',this.value)"></td><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd)"><input data-field="price" data-enter-col="price" type="number" min="0" style="width:100%;padding:5px 8px;border:0.5px solid var(--b2);border-radius:4px;font-size:13px;background:var(--w);color:var(--tx);text-align:right" value="${it.price||''}" placeholder="0" oninput="updPrice(${i},this.value)"></td><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd);text-align:center"><button style="background:transparent;color:var(--ng);border:0.5px solid var(--ng);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600" onclick="delItem(${i})">削除</button></td></tr>`).join('')}</tbody></table>`;initMItemsDrag();setMasterItemsDirty(masterItemsDirty);}
 function initMItemsDrag(){const tbody=document.getElementById('mitems-body');if(!tbody)return;let dragSrc=null;tbody.querySelectorAll('tr').forEach(row=>{row.addEventListener('dragstart',e=>{dragSrc=row;row.style.opacity='0.4';e.dataTransfer.effectAllowed='move';});row.addEventListener('dragend',e=>{row.style.opacity='';tbody.querySelectorAll('tr').forEach(r=>r.style.background='');});row.addEventListener('dragover',e=>{e.preventDefault();tbody.querySelectorAll('tr').forEach(r=>r.style.background='');if(row!==dragSrc)row.style.background='rgba(200,153,42,0.15)';});row.addEventListener('drop',e=>{e.preventDefault();if(dragSrc===row)return;flushMItemsFromDom();const fi=parseInt(dragSrc.dataset.idx);const ti=parseInt(row.dataset.idx);const items=DB.clients[editC].items;const moved=items.splice(fi,1)[0];items.splice(ti,0,moved);persist();setMasterItemsDirty(false);if(curC===editC){renderItems();updateChips();}renderMItems();toast('順番を変更しました');});});}
@@ -3684,6 +3710,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-16',type:'feat',text:'請求明細書で数量あり・単価未設定のセルを黄色表示。単価を保存すると消える'},
   {date:'2026-09-16',type:'feat',text:'発行履歴に「削除履歴」を追加。削除・発行取消・期間超過の記録を残し、復元もできる'},
   {date:'2026-09-16',type:'feat',text:'請求額一覧の締め日区切りに「20日締め／25日締め／末日締め」の見出しを追加'},
   {date:'2026-09-16',type:'fix',text:'請求額一覧で茶茶花など★駐車場代の行が欠ける不具合を修正。締め日の切り替わりに空行を入れて見やすくした'},
