@@ -288,8 +288,8 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 .meisai-summary-tbl .num{text-align:right;font-variant-numeric:tabular-nums}
 .meisai-summary-tbl .cen{text-align:center}
 .meisai-summary-tbl tfoot td{background:#f0ebe3;font-weight:700;border-top:2px solid #5c3d1e}
-.meisai-summary-tbl tr.meisai-closing-gap td{padding:6px 10px;border-bottom:1px solid var(--bd);background:#faf8f5;cursor:default}
-.meisai-summary-tbl tr.meisai-closing-gap:hover td{background:#faf8f5;cursor:default}
+.meisai-summary-tbl tr.meisai-closing-gap td{padding:8px 10px;border-bottom:1px solid var(--bd);background:#efe8dc;cursor:default;font-weight:700;color:#5c3d1e;font-size:13px;letter-spacing:.04em}
+.meisai-summary-tbl tr.meisai-closing-gap:hover td{background:#efe8dc;cursor:default}
 .meisai-viewer-side{width:220px;flex-shrink:0;border-right:1px solid var(--bd);background:var(--s);display:flex;flex-direction:column;min-height:0}
 .meisai-viewer-side input{margin:10px;padding:7px 10px;border:1px solid var(--b2);border-radius:6px;font-size:12px}
 .meisai-viewer-list{overflow-y:auto;flex:1;padding:0 6px 10px}
@@ -915,7 +915,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">必要なら</div><div class="help-step-body"><div class="help-step-title">Excel で保存・印刷</div>ダウンロードした .xlsx を Excel で開く（取り込み操作なし）。印刷または所定フォルダに保存。</div></div>
       <div class="help-note">💡 <strong>未反映の伝票</strong> … <span class="help-tag">請求</span> タブの <span class="help-tag">未反映分を見る</span> や <span class="help-tag">未反映→請求明細Excel</span> で扱います（本日以前の分も含む）。Excel出力すると反映済みになり、同じ伝票は二重に出力されません。件数は <strong>2026年8月1日以降の納品</strong> のみです。7月以前は初回読み込み時に反映済み扱いになります。</div>
       <div class="help-note">💡 <strong>押し忘れた場合</strong> … 翌日（または後日）に <span class="help-tag">未反映→請求明細Excel</span> を押せば、未反映分を含む<strong>その請求月の全伝票</strong>がシートに載ります（前回分も消えない）。反映済みフラグは今回の未反映分にだけ付きます。<span class="help-tag">請求</span> タブの <span class="help-tag">請求月Excel出力</span> でも再出力できます。</div>
-      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表どおり、<strong>締め日のあと店舗番号の若い順</strong>（例: 25日〆は 213→215→234…→287→301→303）。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なしは後ろです。締め日が切り替わるところ（20→25→末）は1行空けて見やすくしています。駐車場代は元の客先の直後（茶茶花・楽園町田・穂のほまれは紙の★どおり必ず行を出します）。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。CSV 出力も可能です。</div>
+      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表どおり、<strong>締め日のあと店舗番号の若い順</strong>（例: 25日〆は 213→215→234…→287→301→303）。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なしは後ろです。締め日の区切りには <strong>20日締め／25日締め／末日締め</strong> の見出し行を入れています。駐車場代は元の客先の直後（茶茶花・楽園町田・穂のほまれは紙の★どおり必ず行を出します）。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。CSV 出力も可能です。</div>
       <div class="help-note">💡 毎回<strong>新しい Excel ファイル</strong>が作成されます。前日保存したファイルを Purims が自動更新することはありません。</div>
     </div>
   </div>
@@ -2288,13 +2288,20 @@ function buildMeisaiSummaryRows(){
     return{idx:i,customer:d.customer,closing,closingDay:d.closingDay||99,slipCount:r.slipCount,sum:r.sum,min:r.min,subtotal:r.subtotal,tax:r.tax,total:r.total,minApplied:r.minApplied};
   });
 }
+function meisaiClosingHeading(day){
+  const d=Number(day)||99;
+  if(d===20)return'20日締め';
+  if(d===25)return'25日締め';
+  return'末日締め';
+}
 function meisaiSummaryBodyHtml(rows){
   if(!rows.length)return'<tr><td colspan="7" class="cen" style="padding:24px;color:#888">データがありません</td></tr>';
   let n=0;
   return rows.map((r,i)=>{
     const prev=i>0?rows[i-1]:null;
-    const gap=prev&&closingSortRank(prev.closingDay)!==closingSortRank(r.closingDay)
-      ?`<tr class="meisai-closing-gap"><td colspan="7"></td></tr>`:'';
+    const newGroup=!prev||closingSortRank(prev.closingDay)!==closingSortRank(r.closingDay);
+    const gap=newGroup
+      ?`<tr class="meisai-closing-gap"><td colspan="7">${escH(meisaiClosingHeading(r.closingDay))}</td></tr>`:'';
     n++;
     const park=/ 駐車場代$/.test(String(r.customer||''));
     const nameHtml=escH(r.customer)+(park?' <span style="color:#2e7d32;font-size:11px;font-weight:700">駐車場</span>':'');
@@ -2576,7 +2583,7 @@ function printMeisaiSummary(){
     th{background:#eee}
     .num{text-align:right}.cen{text-align:center}
     tfoot td{font-weight:700;background:#f5f5f5}
-    tr.meisai-closing-gap td{padding:8px;border-bottom:1px solid #333;background:#faf8f5}
+    tr.meisai-closing-gap td{padding:8px 10px;border-bottom:1px solid #333;background:#efe8dc;font-weight:700;color:#5c3d1e;font-size:13px}
     @media print{body{margin:8px}}
   `,sheet.innerHTML);
 }
@@ -2588,7 +2595,9 @@ function exportMeisaiSummaryCSV(){
   let n=0;
   rows.forEach((r,i)=>{
     const prev=i>0?rows[i-1]:null;
-    if(prev&&closingSortRank(prev.closingDay)!==closingSortRank(r.closingDay))lines.push(['','','','','','','','']);
+    if(!prev||closingSortRank(prev.closingDay)!==closingSortRank(r.closingDay)){
+      lines.push(['',meisaiClosingHeading(r.closingDay),'','','','','','']);
+    }
     n++;
     lines.push([n,r.customer,r.closing,r.slipCount,r.subtotal,r.tax,r.total,r.minApplied?'○':'']);
   });
@@ -3446,6 +3455,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-16',type:'feat',text:'請求額一覧の締め日区切りに「20日締め／25日締め／末日締め」の見出しを追加'},
   {date:'2026-09-16',type:'fix',text:'請求額一覧で茶茶花など★駐車場代の行が欠ける不具合を修正。締め日の切り替わりに空行を入れて見やすくした'},
   {date:'2026-09-16',type:'fix',text:'同一納品日ロックと訂正再発行を修正（履歴の照合ずれで警告・訂正が出ない不具合）'},
   {date:'2026-09-16',type:'fix',text:'請求の25日〆を店舗番号順に。215（熱中屋）・301（バグース町田東）が末尾に落ちないようにした'},
