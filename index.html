@@ -913,7 +913,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">必要なら</div><div class="help-step-body"><div class="help-step-title">Excel で保存・印刷</div>ダウンロードした .xlsx を Excel で開く（取り込み操作なし）。印刷または所定フォルダに保存。</div></div>
       <div class="help-note">💡 <strong>未反映の伝票</strong> … <span class="help-tag">請求</span> タブの <span class="help-tag">未反映分を見る</span> や <span class="help-tag">未反映→請求明細Excel</span> で扱います（本日以前の分も含む）。Excel出力すると反映済みになり、同じ伝票は二重に出力されません。件数は <strong>2026年8月1日以降の納品</strong> のみです。7月以前は初回読み込み時に反映済み扱いになります。</div>
       <div class="help-note">💡 <strong>押し忘れた場合</strong> … 翌日（または後日）に <span class="help-tag">未反映→請求明細Excel</span> を押せば、未反映分を含む<strong>その請求月の全伝票</strong>がシートに載ります（前回分も消えない）。反映済みフラグは今回の未反映分にだけ付きます。<span class="help-tag">請求</span> タブの <span class="help-tag">請求月Excel出力</span> でも再出力できます。</div>
-      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表と同じです。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なし（成田・六本木まんぷく・小学校・マキア相模原など）は後ろです。駐車場代は元の客先の直後。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。CSV 出力も可能です。</div>
+      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表どおり、<strong>締め日のあと店舗番号の若い順</strong>（例: 25日〆は 213→215→234…→287→301→303）。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なしは後ろです。駐車場代は元の客先の直後。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。CSV 出力も可能です。</div>
       <div class="help-note">💡 毎回<strong>新しい Excel ファイル</strong>が作成されます。前日保存したファイルを Purims が自動更新することはありません。</div>
     </div>
   </div>
@@ -1497,41 +1497,78 @@ function compareClientName(a,b){
 function billingNameKey(name){
   return String(name||'').replace(/ 駐車場代$/,'').normalize('NFKC').replace(/[\s　]/g,'').replace(/^\d+/,'').toLowerCase();
 }
-/** 紙の請求一覧表と同じ店舗順（20日〆→25日〆→末日〆の中身） */
-const BILLING_LIST_ORDER=[
-  '楽園　町田店','楽園　相模原店','IVOホームズパスタトラットリア渋谷Part2','荒木山　東急プラザ渋谷店','ぬる燗佐藤　渋谷ヒカリエ','IVOホームズパスタトラットリア渋谷本店','炉端の佐藤　中目黒店','田町　鳥心',
-  '藤井茗縁','韓国大衆酒場　ラッキーソウル西新宿','茶茶花','ヘブンリー　代官山店','HEAVENLY　代官山店','わらやき屋　田町','ベルサイユの豚','馬並み家　田町','熱中屋　田町三田LIVE','美食米門　品川','YAKITORI STAND IPPON','goo　italiano　渋谷本店','goo　italiano　代々木上原','自由が丘まんぷく','代々木上原まんぷく','青山まんぷく','レッドペッパー　恵比寿','レッドペッパー　表参道','胡同　西麻布','穂のほまれ　西新宿店','さかえや　恵比寿','ちいかわラーメン　渋谷店','ローストビーフ大野　竹下口店','三軒茶屋病院','魚がし日本一　三田店','魚がし日本一　田町店','酒とシャケとサーモンズ','鴨ときどき馬　品川本店','バグース　町田東','隠れ房　町田','町田　yusoshi','魚がし日本一　成田空港店','六本木まんぷく',
-  'ジンギスカン羊一','比内亭　恵比寿','門','大豊記　恵比寿弐號房','大豊記　本館','大豊記　西新宿','鮨　はつめ','鮨　謙心','比内亭はなれ','やきとり　マルヒ','ＡＳＡＮＯＨＡ','寿司カレッジ東京','へぎそば清兵衛','ＧＣＣバグース　町田','天一　町田','マキア　町田店','境木小学校','中沢小学校','SCAPES THE SUITE','マキア　相模原店'
-];
-const BILLING_LIST_RANK=(()=>{const m=new Map();BILLING_LIST_ORDER.forEach((n,i)=>{const k=billingNameKey(n);if(k&&!m.has(k))m.set(k,i);});return m;})();
-function billingListRank(name){
+/** 紙の請求一覧表の店舗番号。null＝番号なし。25日〆は番号の若い順（215・301も含む） */
+const BILLING_STORE_NO={
+  '楽園　町田店':null,'楽園　相模原店':null,
+  'IVOホームズパスタトラットリア渋谷Part2':102,'荒木山　東急プラザ渋谷店':103,'ぬる燗佐藤　渋谷ヒカリエ':105,
+  'IVOホームズパスタトラットリア渋谷本店':107,'炉端の佐藤　中目黒店':111,'田町　鳥心':207,
+  '藤井茗縁':104,'韓国大衆酒場　ラッキーソウル西新宿':108,'茶茶花':109,'ヘブンリー　代官山店':110,'HEAVENLY　代官山店':110,
+  'わらやき屋　田町':210,'ベルサイユの豚':211,'馬並み家　田町':213,'熱中屋　田町三田LIVE':215,'酒場ハチ':215,
+  '美食米門　品川':234,'YAKITORI STAND IPPON':235,
+  'goo　italiano　渋谷本店':263,'goo　italiano　代々木上原':264,
+  '自由が丘まんぷく':265,'代々木上原まんぷく':266,'青山まんぷく':267,
+  'レッドペッパー　恵比寿':268,'レッドペッパー　表参道':269,'胡同　西麻布':270,'穂のほまれ　西新宿店':272,
+  'さかえや　恵比寿':275,'ちいかわラーメン　渋谷店':276,'ローストビーフ大野　竹下口店':277,'三軒茶屋病院':279,
+  '魚がし日本一　三田店':282,'魚がし日本一　田町店':283,'酒とシャケとサーモンズ':286,'鴨ときどき馬　品川本店':287,
+  'バグース　町田東':301,'バグース　町田':301,'隠れ房　町田':303,'町田　yusoshi':307,
+  '魚がし日本一　成田空港店':null,'六本木まんぷく':null,
+  'ジンギスカン羊一':209,'比内亭　恵比寿':251,'門':252,'大豊記　恵比寿弐號房':254,'大豊記　本館':255,'大豊記　西新宿':256,
+  '鮨　はつめ':261,'鮨　謙心':271,'比内亭はなれ':274,'やきとり　マルヒ':278,'ＡＳＡＮＯＨＡ':280,'寿司カレッジ東京':281,
+  'へぎそば清兵衛':304,'ＧＣＣバグース　町田':305,'天一　町田':306,'マキア　町田店':308,
+  '境木小学校':null,'中沢小学校':null,'SCAPES THE SUITE':119,'マキア　相模原店':null
+};
+const BILLING_STORE_NO_BY_KEY=(()=>{const m=new Map();Object.keys(BILLING_STORE_NO).forEach(n=>{const k=billingNameKey(n);if(k&&!m.has(k))m.set(k,BILLING_STORE_NO[n]);});return m;})();
+/** 番号なしの固定順（紙の表どおり。20日〆は先頭、25日〆・末日〆は番号の後ろ） */
+const BILLING_UNNUMBERED_ORDER=['楽園　町田店','楽園　相模原店','魚がし日本一　成田空港店','六本木まんぷく','境木小学校','中沢小学校','マキア　相模原店'];
+const BILLING_UNNUMBERED_RANK=(()=>{const m=new Map();BILLING_UNNUMBERED_ORDER.forEach((n,i)=>{const k=billingNameKey(n);if(k&&!m.has(k))m.set(k,i);});return m;})();
+function lookupBillingStoreNo(name){
   const k=billingNameKey(name);
-  if(!k)return 10000;
-  if(BILLING_LIST_RANK.has(k))return BILLING_LIST_RANK.get(k);
-  if(k.length>=5){
-    let hit=-1,n=0;
-    BILLING_LIST_RANK.forEach((rank,key)=>{
-      if(key.length>=5&&(k.includes(key)||key.includes(k))){hit=rank;n++;}
-    });
-    if(n===1)return hit;
+  if(!k)return{found:false,no:null};
+  if(BILLING_STORE_NO_BY_KEY.has(k))return{found:true,no:BILLING_STORE_NO_BY_KEY.get(k)};
+  let bestKey='',bestNo=null,n=0;
+  BILLING_STORE_NO_BY_KEY.forEach((no,key)=>{
+    if(key.length<4)return;
+    if(k.includes(key)||key.includes(k)){
+      if(key.length>bestKey.length){bestKey=key;bestNo=no;n=1;}
+      else if(key.length===bestKey.length)n++;
+    }
+  });
+  if(n===1)return{found:true,no:bestNo};
+  return{found:false,no:null};
+}
+/** 締め内の並びキー。番号ありは店舗番号順（119は末日の後ろ側） */
+function billingSortPos(name,closingDay){
+  const hit=lookupBillingStoreNo(name);
+  const k=billingNameKey(name);
+  const unRank=BILLING_UNNUMBERED_RANK.has(k)?BILLING_UNNUMBERED_RANK.get(k):50;
+  if(closingDay===20){
+    if(hit.found&&hit.no==null)return unRank;
+    if(hit.found)return 1000+(hit.no||0);
+    return 5000;
   }
-  return 10000;
+  if(closingDay===25){
+    if(hit.found&&hit.no!=null)return hit.no;
+    if(hit.found&&hit.no==null)return 10000+unRank;
+    return 20000;
+  }
+  /* 末日〆: 番号 → 小学校 → 119 → マキア相模原 */
+  if(hit.found&&hit.no!=null&&hit.no!==119)return hit.no;
+  if(hit.found&&hit.no==null){
+    if(k.includes('マキア')&&k.includes('相模原'))return 12000;
+    return 10000+unRank;
+  }
+  if(hit.found&&hit.no===119)return 11000;
+  return 20000;
 }
 function sortMeisaiData(meisaiData){
   (meisaiData||[]).sort((a,b)=>{
+    const cr=closingSortRank(a.closingDay)-closingSortRank(b.closingDay);
+    if(cr)return cr;
     const ap=/ 駐車場代$/.test(a.customer||''),bp=/ 駐車場代$/.test(b.customer||'');
     const abase=ap?(a.customer||'').replace(/ 駐車場代$/,''):(a.customer||'');
     const bbase=bp?(b.customer||'').replace(/ 駐車場代$/,''):(b.customer||'');
-    const ra=billingListRank(abase),rb=billingListRank(bbase);
-    const aKnown=ra<10000,bKnown=rb<10000;
-    if(aKnown&&bKnown){
-      if(ra!==rb)return ra-rb;
-      if(ap!==bp)return ap?1:-1;
-      return (a.year-b.year)||(a.month-b.month);
-    }
-    if(aKnown!==bKnown)return aKnown?-1:1;
-    const cr=closingSortRank(a.closingDay)-closingSortRank(b.closingDay);
-    if(cr)return cr;
+    const pa=billingSortPos(abase,a.closingDay),pb=billingSortPos(bbase,b.closingDay);
+    if(pa!==pb)return pa-pb;
     if(ap!==bp)return ap?1:-1;
     return compareClientNameByClosing(abase,bbase,a.closingDay)||(a.year-b.year)||(a.month-b.month);
   });
@@ -3332,6 +3369,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-16',type:'fix',text:'請求の25日〆を店舗番号順に。215（熱中屋）・301（バグース町田東）が末尾に落ちないようにした'},
   {date:'2026-09-14',type:'fix',text:'請求の並びを紙の表に合わせた。20日〆だけ番号なしが先、25日〆・末日〆の番号なしは後ろ'},
   {date:'2026-09-14',type:'fix',text:'請求明細書の左一覧・全店舗印刷・Excelを紙の請求一覧表と同じ店舗順にした'},
   {date:'2026-09-14',type:'fix',text:'請求額一覧の並びを紙の請求一覧表と同じ店舗順にした'},
