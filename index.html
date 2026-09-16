@@ -288,6 +288,8 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 .meisai-summary-tbl .num{text-align:right;font-variant-numeric:tabular-nums}
 .meisai-summary-tbl .cen{text-align:center}
 .meisai-summary-tbl tfoot td{background:#f0ebe3;font-weight:700;border-top:2px solid #5c3d1e}
+.meisai-summary-tbl tr.meisai-closing-gap td{padding:6px 10px;border-bottom:1px solid var(--bd);background:#faf8f5;cursor:default}
+.meisai-summary-tbl tr.meisai-closing-gap:hover td{background:#faf8f5;cursor:default}
 .meisai-viewer-side{width:220px;flex-shrink:0;border-right:1px solid var(--bd);background:var(--s);display:flex;flex-direction:column;min-height:0}
 .meisai-viewer-side input{margin:10px;padding:7px 10px;border:1px solid var(--b2);border-radius:6px;font-size:12px}
 .meisai-viewer-list{overflow-y:auto;flex:1;padding:0 6px 10px}
@@ -913,7 +915,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">必要なら</div><div class="help-step-body"><div class="help-step-title">Excel で保存・印刷</div>ダウンロードした .xlsx を Excel で開く（取り込み操作なし）。印刷または所定フォルダに保存。</div></div>
       <div class="help-note">💡 <strong>未反映の伝票</strong> … <span class="help-tag">請求</span> タブの <span class="help-tag">未反映分を見る</span> や <span class="help-tag">未反映→請求明細Excel</span> で扱います（本日以前の分も含む）。Excel出力すると反映済みになり、同じ伝票は二重に出力されません。件数は <strong>2026年8月1日以降の納品</strong> のみです。7月以前は初回読み込み時に反映済み扱いになります。</div>
       <div class="help-note">💡 <strong>押し忘れた場合</strong> … 翌日（または後日）に <span class="help-tag">未反映→請求明細Excel</span> を押せば、未反映分を含む<strong>その請求月の全伝票</strong>がシートに載ります（前回分も消えない）。反映済みフラグは今回の未反映分にだけ付きます。<span class="help-tag">請求</span> タブの <span class="help-tag">請求月Excel出力</span> でも再出力できます。</div>
-      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表どおり、<strong>締め日のあと店舗番号の若い順</strong>（例: 25日〆は 213→215→234…→287→301→303）。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なしは後ろです。駐車場代は元の客先の直後。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。CSV 出力も可能です。</div>
+      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表どおり、<strong>締め日のあと店舗番号の若い順</strong>（例: 25日〆は 213→215→234…→287→301→303）。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なしは後ろです。締め日が切り替わるところ（20→25→末）は1行空けて見やすくしています。駐車場代は元の客先の直後（茶茶花・楽園町田・穂のほまれは紙の★どおり必ず行を出します）。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。CSV 出力も可能です。</div>
       <div class="help-note">💡 毎回<strong>新しい Excel ファイル</strong>が作成されます。前日保存したファイルを Purims が自動更新することはありません。</div>
     </div>
   </div>
@@ -964,7 +966,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="help-section-hd" onclick="toggleHelp('billing')">📄 請求明細書（確認・Excel・印刷）<span class="help-toggle" id="help-toggle-billing">▶</span></div>
     <div class="help-section-body">
       <p>Purims がブラウザ内で請求明細書を<strong>直接表示・印刷・Excel出力</strong>します。運用 PC に Excel テンプレート（.xlsm）を置く必要はありません。印刷レイアウトは<strong>プゥル・ヴー伝票アプリと同じ書式</strong>です（ネクサス名義）。</p>
-      <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。金額が入っている回だけ駐車場側が作られます。</div></div>
+      <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。紙の一覧で★の客先（茶茶花・楽園　町田店・穂のほまれ　西新宿店）は未設定でも駐車場行を出します（金額0でも行あり）。</div></div>
       <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧は紙の請求一覧表と同じ順（25日〆・末日〆の番号なしは後ろ）。クリックで切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。カレンダー左側には、<strong>チェック後に発行した分だけ</strong>「発行あり・客先名・納品日」が出ます。確認したら行のチェック（または <span class="help-tag">表示中を消す</span>）で一覧から消せます。</div></div>
       <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。左上に客先名＋様、右上に小計・消費税・ご請求金額、下に品名・単価・納品日別数量の表（1ページ20行）です。</div></div>
@@ -1192,10 +1194,11 @@ function persistHistoryLocal(){localStorage.setItem('purims_h',JSON.stringify(DB
 function load(){
   try{
     const saved=localStorage.getItem('purims_v14');
-    if(saved){const d=JSON.parse(saved);if(d.clients&&Object.keys(d.clients).length){DB.clients=d.clients;DB.cycles=d.cycles||{};DB.closing=d.closing||{};DB.minCharge=d.minCharge||{};DB.deliveryFee=d.deliveryFee||{};DB.packagingFee=d.packagingFee||{};DB.parkingEnabled=d.parkingEnabled||{};DB.slipCheckedThrough=d.slipCheckedThrough||'';DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing||{};DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing||{};DB.slipIssuedAckIds=d.slipIssuedAckIds||{};DB.products=d.products&&d.products.length?d.products:JSON.parse(JSON.stringify(INIT_PRODUCTS));DB.groups=d.groups&&d.groups.length?d.groups:JSON.parse(JSON.stringify(INIT_GROUPS));DB.clientGroups=d.clientGroups||JSON.parse(JSON.stringify(INIT_CLIENT_GROUPS));DB.clientOrder=d.clientOrder||{};loadLocalHistory();return;}}
+    if(saved){const d=JSON.parse(saved);if(d.clients&&Object.keys(d.clients).length){DB.clients=d.clients;DB.cycles=d.cycles||{};DB.closing=d.closing||{};DB.minCharge=d.minCharge||{};DB.deliveryFee=d.deliveryFee||{};DB.packagingFee=d.packagingFee||{};DB.parkingEnabled=d.parkingEnabled||{};DB.slipCheckedThrough=d.slipCheckedThrough||'';DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing||{};DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing||{};DB.slipIssuedAckIds=d.slipIssuedAckIds||{};DB.products=d.products&&d.products.length?d.products:JSON.parse(JSON.stringify(INIT_PRODUCTS));DB.groups=d.groups&&d.groups.length?d.groups:JSON.parse(JSON.stringify(INIT_GROUPS));DB.clientGroups=d.clientGroups||JSON.parse(JSON.stringify(INIT_CLIENT_GROUPS));DB.clientOrder=d.clientOrder||{};loadLocalHistory();if(ensurePaperParkingFlags())persistDraft();return;}}
   }catch(e){}
   DB.clients=JSON.parse(JSON.stringify(INIT_DATA.clients));DB.cycles=JSON.parse(JSON.stringify(INIT_DATA.cycles));DB.products=JSON.parse(JSON.stringify(INIT_PRODUCTS));DB.groups=JSON.parse(JSON.stringify(INIT_GROUPS));DB.clientGroups=JSON.parse(JSON.stringify(INIT_CLIENT_GROUPS));DB.history=[];
   loadLocalHistory();
+  if(ensurePaperParkingFlags())persistDraft();
 }
 function persistDraft(){
   localStorage.setItem('purims_v14',JSON.stringify({clients:DB.clients,cycles:DB.cycles,products:DB.products,groups:DB.groups,clientGroups:DB.clientGroups,clientOrder:DB.clientOrder,closing:DB.closing,minCharge:DB.minCharge||{},deliveryFee:DB.deliveryFee||{},packagingFee:DB.packagingFee||{},parkingEnabled:DB.parkingEnabled||{},slipCheckedThrough:DB.slipCheckedThrough||'',slipCheckedThroughByClosing:DB.slipCheckedThroughByClosing||{},slipCheckedAtByClosing:DB.slipCheckedAtByClosing||{},slipIssuedAckIds:DB.slipIssuedAckIds||{}}));
@@ -1588,7 +1591,24 @@ function sortMeisaiData(meisaiData){
 function getMinCharge(customer){const n=Number(DB.minCharge&&DB.minCharge[customer]);return n>0?n:0;}
 function getDeliveryFee(customer){const n=Number(DB.deliveryFee&&DB.deliveryFee[customer]);return n>0?n:0;}
 function getPackagingFee(customer){const n=Number(DB.packagingFee&&DB.packagingFee[customer]);return n>0?n:0;}
-function isParkingEnabled(customer){return !!(DB.parkingEnabled&&DB.parkingEnabled[customer]);}
+/** 紙の請求一覧で★駐車場代ありの客先（茶茶花・楽園町田・穂のほまれ） */
+const PAPER_PARKING_CLIENTS=['楽園　町田店','茶茶花','穂のほまれ　西新宿店'];
+function isParkingEnabled(customer){
+  if(PAPER_PARKING_CLIENTS.indexOf(customer)>=0)return true;
+  return !!(DB.parkingEnabled&&DB.parkingEnabled[customer]);
+}
+/** ★客先はマスタ未設定でも駐車場代ありにする（請求一覧に必ず行を出す） */
+function ensurePaperParkingFlags(){
+  if(!DB.parkingEnabled||typeof DB.parkingEnabled!=='object')DB.parkingEnabled={};
+  let changed=false;
+  PAPER_PARKING_CLIENTS.forEach(name=>{
+    if(DB.clients&&DB.clients[name]&&!DB.parkingEnabled[name]){
+      DB.parkingEnabled[name]=true;
+      changed=true;
+    }
+  });
+  return changed;
+}
 const CHECK_CLOSING_OPTIONS=[{day:20,label:'20日〆'},{day:25,label:'25日〆'},{day:99,label:'末日〆'}];
 function normalizeCheckClosing(day){const n=Number(day);return(n===20||n===25)?n:99;}
 function closingCheckLabel(day){const d=normalizeCheckClosing(day);return d===20?'20日〆':d===25?'25日〆':'末日〆';}
@@ -1841,7 +1861,13 @@ function renderBillingCheckCalendar(){
 }
 function parkingBillingName(customer){return String(customer||'')+' 駐車場代';}
 function isParkingMeisai(data){return / 駐車場代$/.test(String(data&&data.customer||''));}
-function buildParkingInvoicesFromRecs(recs){const park=(recs||[]).filter(h=>Number(h.parkingFee)>0);if(!park.length)return null;if(park.length>14){/* keep newest-sorted order already */}return park.slice(0,14).map((h,idx)=>({invoiceNo:String(idx+1),deliveryDate:historyDeliveryDate(h),items:[{name:'駐車場代',price:Number(h.parkingFee),qty:1}]}));}
+function buildParkingInvoicesFromRecs(recs){
+  const park=(recs||[]).filter(h=>Number(h.parkingFee)>0);
+  if(park.length)return park.slice(0,14).map((h,idx)=>({invoiceNo:String(idx+1),deliveryDate:historyDeliveryDate(h),items:[{name:'駐車場代',price:Number(h.parkingFee),qty:1}]}));
+  /* 駐車場代ありだが未入力でも一覧・明細に行を出す（紙の★と同じ） */
+  if(!(recs||[]).length)return null;
+  return[{invoiceNo:'1',deliveryDate:historyDeliveryDate(recs[0])||'',items:[{name:'駐車場代',price:0,qty:1}]}];
+}
 function toHalfWidthDigits(s){return String(s).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0));}
 function parseDeliveryDate(str){if(str==null||str===''||str==='—')return null;const s=toHalfWidthDigits(String(str).trim());let m=s.match(/(\d{4})年(\d{1,2})月(\d{1,2})日?/);if(m)return{y:+m[1],m:+m[2],d:+m[3]};m=s.match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/);if(m)return{y:+m[1],m:+m[2],d:+m[3]};const p=s.split(/[\/.\-]/).map(Number);if(p.length>=3&&!isNaN(p[0])&&p[0]>1900)return{y:p[0],m:p[1],d:p[2]};return null;}
 function historyDeliveryDate(h){
@@ -2025,11 +2051,14 @@ function saveAllParkingFees(){
 }
 function buildInvoicesFromRecs(recs,customer,warnings){if(recs.length>14)warnings.push(`${customer}（${recs.length}枚・14枚まで）`);let zeroPrice=0;const fee=getDeliveryFee(customer);const pack=getPackagingFee(customer);const invoices=recs.slice(0,14).map((h,idx)=>{const items=(h.items||[]).filter(it=>it.qty>0).map(it=>{const price=getBillingPrice(customer,it.code,it.name);if(!price)zeroPrice++;return{name:it.name,price,qty:it.qty};});const pts=items.reduce((s,it)=>s+(Number(it.qty)||0),0);if(fee>0)items.push({name:'配送費',price:fee,qty:1});if(pack>0&&pts>0)items.push({name:'包装料',price:pack,qty:pts});return{invoiceNo:String(idx+1),deliveryDate:historyDeliveryDate(h),items};});if(zeroPrice)warnings.push(`${customer} 単価未設定${zeroPrice}行`);return invoices;}
 function collectMeisaiData(opts){const warnings=[];const mode=opts?.mode||'month';
+ensurePaperParkingFlags();
 function pushCustomerSheets(meisaiData,customer,year,month,closingDay,recs){
   if(!recs.length)return;
   meisaiData.push({customer,year,month,closingDay,minCharge:getMinCharge(customer),invoices:buildInvoicesFromRecs(recs,customer,warnings)});
-  const parkInv=buildParkingInvoicesFromRecs(recs);
-  if(parkInv)meisaiData.push({customer:parkingBillingName(customer),year,month,closingDay,minCharge:0,invoices:parkInv});
+  if(isParkingEnabled(customer)){
+    const parkInv=buildParkingInvoicesFromRecs(recs);
+    if(parkInv)meisaiData.push({customer:parkingBillingName(customer),year,month,closingDay,minCharge:0,invoices:parkInv});
+  }
 }
 if(mode==='today'){const toMark=(DB.history||[]).filter(h=>!h.billingExportedAt&&isExportableHist(h));if(!toMark.length){const raw=(DB.history||[]).filter(h=>!h.billingExportedAt).length;if(raw)return{error:`未反映 ${raw}件ありますが、7月以前・納品日不明などで出力対象がありません`};return{error:'未反映の伝票がありません'};}const sheetKeys=new Map();toMark.forEach(h=>{const closingDay=parseClosingDay(DB.closing[h.client]||'');const bm=getBillingMonth(parseHistDeliveryDate(h),closingDay);if(!bm)return;const k=`${h.client}\0${bm.y}\0${bm.m}`;if(!sheetKeys.has(k))sheetKeys.set(k,{customer:h.client,year:bm.y,month:bm.m,closingDay});});const meisaiData=[];sheetKeys.forEach(({customer,year,month,closingDay})=>{const recs=(DB.history||[]).filter(h=>{if(h.client!==customer)return false;const d=parseHistDeliveryDate(h);if(!isBillingDeliveryInScope(d))return false;return belongsToBillingMonth(d,year,month,closingDay);}).sort(sortHistoryRecs);pushCustomerSheets(meisaiData,customer,year,month,closingDay,recs);});sortMeisaiData(meisaiData);if(!meisaiData.length)return{error:'請求データを作成できませんでした（締め日・納品日の組み合わせを確認してください）'};assignUniqueSheetNames(meisaiData);return{meisaiData,toMark,warnings};}const year=parseInt(opts?.year,10),month=parseInt(opts?.month,10);if(!year||!month||month<1||month>12)return{error:'請求月（年月）を指定してください'};if(year<BILLING_DELIVERY_MIN.y||(year===BILLING_DELIVERY_MIN.y&&month<BILLING_DELIVERY_MIN.m))return{error:`${year}年${month}月は請求対象外です（${BILLING_DELIVERY_MIN.y}年${BILLING_DELIVERY_MIN.m}月以降の納品のみ）`};if(!isBillingMonthWithinRetention(year,month))return{error:`${year}年${month}月は保存期間（${HISTORY_KEEP_MONTHS}か月）外です`};const meisaiData=[];Object.keys(DB.clients||{}).forEach(customer=>{const closingDay=parseClosingDay(DB.closing[customer]||'');const recs=(DB.history||[]).filter(h=>{if(h.client!==customer)return false;if(!isBillingDeliveryInScope(parseHistDeliveryDate(h)))return false;return belongsToBillingMonth(parseHistDeliveryDate(h),year,month,closingDay);}).sort(sortHistoryRecs);pushCustomerSheets(meisaiData,customer,year,month,closingDay,recs);});if(!meisaiData.length)return{error:`${year}年${month}月の請求データがありません`};sortMeisaiData(meisaiData);assignUniqueSheetNames(meisaiData);return{meisaiData,warnings};}
 function meisaiThin(){return{style:'thin',color:{argb:'FF000000'}};}
@@ -2256,8 +2285,51 @@ function buildMeisaiSummaryRows(){
   return _meisaiViewerData.map((d,i)=>{
     const r=buildMeisaiRows(d);
     const closing=d.closingDay===99?'末':(d.closingDay?String(d.closingDay):'末');
-    return{idx:i,customer:d.customer,closing,slipCount:r.slipCount,sum:r.sum,min:r.min,subtotal:r.subtotal,tax:r.tax,total:r.total,minApplied:r.minApplied};
+    return{idx:i,customer:d.customer,closing,closingDay:d.closingDay||99,slipCount:r.slipCount,sum:r.sum,min:r.min,subtotal:r.subtotal,tax:r.tax,total:r.total,minApplied:r.minApplied};
   });
+}
+function meisaiSummaryBodyHtml(rows){
+  if(!rows.length)return'<tr><td colspan="7" class="cen" style="padding:24px;color:#888">データがありません</td></tr>';
+  let n=0;
+  return rows.map((r,i)=>{
+    const prev=i>0?rows[i-1]:null;
+    const gap=prev&&closingSortRank(prev.closingDay)!==closingSortRank(r.closingDay)
+      ?`<tr class="meisai-closing-gap"><td colspan="7"></td></tr>`:'';
+    n++;
+    const park=/ 駐車場代$/.test(String(r.customer||''));
+    const nameHtml=escH(r.customer)+(park?' <span style="color:#2e7d32;font-size:11px;font-weight:700">駐車場</span>':'');
+    return gap+`<tr onclick="selectMeisaiViewer(${r.idx});setMeisaiViewerMode('detail')">
+    <td class="cen">${n}</td>
+    <td>${nameHtml}</td>
+    <td class="cen">${escH(r.closing)}</td>
+    <td class="cen">${r.slipCount}</td>
+    <td class="num">${yenFmt(r.subtotal)}${r.minApplied?' <span style="color:#854f0b;font-size:11px">保</span>':''}</td>
+    <td class="num">${yenFmt(r.tax)}</td>
+    <td class="num" style="font-weight:700">${yenFmt(r.total)}</td>
+  </tr>`;
+  }).join('');
+}
+function meisaiSummaryHtml(){
+  const rows=buildMeisaiSummaryRows();
+  const sumSub=rows.reduce((s,r)=>s+r.subtotal,0);
+  const sumTax=rows.reduce((s,r)=>s+r.tax,0);
+  const sumTot=rows.reduce((s,r)=>s+r.total,0);
+  const sumSlips=rows.reduce((s,r)=>s+r.slipCount,0);
+  const body=meisaiSummaryBodyHtml(rows);
+  return`<div id="meisai-summary-print">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#5c3d1e">請求額一覧表</div>
+        <div style="font-size:12px;color:#666;margin-top:2px">株式会社ネクサス　／　${escH(_meisaiViewerPeriodLabel||(`${_meisaiViewerYear}年${_meisaiViewerMonth}月分`))}</div>
+      </div>
+      <div style="font-size:12px;color:#666">行をクリックすると請求明細書を表示　｜　「保」＝最低保証適用</div>
+    </div>
+    <table class="meisai-summary-tbl">
+      <thead><tr><th style="width:48px" class="cen">No</th><th>納品客先</th><th style="width:64px" class="cen">締め日</th><th style="width:64px" class="cen">伝票数</th><th style="width:120px" class="num">小計（税抜）</th><th style="width:100px" class="num">消費税</th><th style="width:120px" class="num">ご請求金額</th></tr></thead>
+      <tbody>${body}</tbody>
+      <tfoot><tr><td></td><td>合計（${rows.length}店舗）</td><td></td><td class="cen">${sumSlips}</td><td class="num">${yenFmt(sumSub)}</td><td class="num">${yenFmt(sumTax)}</td><td class="num">${yenFmt(sumTot)}</td></tr></tfoot>
+    </table>
+  </div>`;
 }
 function meisaiPrintStyles(){
   return`
@@ -2369,40 +2441,6 @@ function meisaiSheetHtml(data){
   }).join('');
 
   return`<div id="meisai-sheet-print">${pagesHtml}</div>`;
-}
-function meisaiSummaryHtml(){
-  const rows=buildMeisaiSummaryRows();
-  const sumSub=rows.reduce((s,r)=>s+r.subtotal,0);
-  const sumTax=rows.reduce((s,r)=>s+r.tax,0);
-  const sumTot=rows.reduce((s,r)=>s+r.total,0);
-  const sumSlips=rows.reduce((s,r)=>s+r.slipCount,0);
-  const body=rows.map((r,n)=>{
-    const park=/ 駐車場代$/.test(String(r.customer||''));
-    const nameHtml=escH(r.customer)+(park?' <span style="color:#2e7d32;font-size:11px;font-weight:700">駐車場</span>':'');
-    return`<tr onclick="selectMeisaiViewer(${r.idx});setMeisaiViewerMode('detail')">
-    <td class="cen">${n+1}</td>
-    <td>${nameHtml}</td>
-    <td class="cen">${escH(r.closing)}</td>
-    <td class="cen">${r.slipCount}</td>
-    <td class="num">${yenFmt(r.subtotal)}${r.minApplied?' <span style="color:#854f0b;font-size:11px">保</span>':''}</td>
-    <td class="num">${yenFmt(r.tax)}</td>
-    <td class="num" style="font-weight:700">${yenFmt(r.total)}</td>
-  </tr>`;
-  }).join('')||'<tr><td colspan="7" class="cen" style="padding:24px;color:#888">データがありません</td></tr>';
-  return`<div id="meisai-summary-print">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <div>
-        <div style="font-size:16px;font-weight:700;color:#5c3d1e">請求額一覧表</div>
-        <div style="font-size:12px;color:#666;margin-top:2px">株式会社ネクサス　／　${escH(_meisaiViewerPeriodLabel||(`${_meisaiViewerYear}年${_meisaiViewerMonth}月分`))}</div>
-      </div>
-      <div style="font-size:12px;color:#666">行をクリックすると請求明細書を表示　｜　「保」＝最低保証適用</div>
-    </div>
-    <table class="meisai-summary-tbl">
-      <thead><tr><th style="width:48px" class="cen">No</th><th>納品客先</th><th style="width:64px" class="cen">締め日</th><th style="width:64px" class="cen">伝票数</th><th style="width:120px" class="num">小計（税抜）</th><th style="width:100px" class="num">消費税</th><th style="width:120px" class="num">ご請求金額</th></tr></thead>
-      <tbody>${body}</tbody>
-      <tfoot><tr><td></td><td>合計（${rows.length}店舗）</td><td></td><td class="cen">${sumSlips}</td><td class="num">${yenFmt(sumSub)}</td><td class="num">${yenFmt(sumTax)}</td><td class="num">${yenFmt(sumTot)}</td></tr></tfoot>
-    </table>
-  </div>`;
 }
 function setMeisaiViewerMode(mode){
   _meisaiViewerMode=mode==='detail'?'detail':'summary';
@@ -2538,6 +2576,7 @@ function printMeisaiSummary(){
     th{background:#eee}
     .num{text-align:right}.cen{text-align:center}
     tfoot td{font-weight:700;background:#f5f5f5}
+    tr.meisai-closing-gap td{padding:8px;border-bottom:1px solid #333;background:#faf8f5}
     @media print{body{margin:8px}}
   `,sheet.innerHTML);
 }
@@ -2546,7 +2585,13 @@ function exportMeisaiSummaryCSV(){
   if(!rows.length){toast('出力するデータがありません','e');return;}
   const bom='\uFEFF';
   const lines=[['No','納品客先','締め日','伝票数','小計（税抜）','消費税','ご請求金額','最低保証適用']];
-  rows.forEach((r,i)=>lines.push([i+1,r.customer,r.closing,r.slipCount,r.subtotal,r.tax,r.total,r.minApplied?'○':'']));
+  let n=0;
+  rows.forEach((r,i)=>{
+    const prev=i>0?rows[i-1]:null;
+    if(prev&&closingSortRank(prev.closingDay)!==closingSortRank(r.closingDay))lines.push(['','','','','','','','']);
+    n++;
+    lines.push([n,r.customer,r.closing,r.slipCount,r.subtotal,r.tax,r.total,r.minApplied?'○':'']);
+  });
   const sumSub=rows.reduce((s,r)=>s+r.subtotal,0),sumTax=rows.reduce((s,r)=>s+r.tax,0),sumTot=rows.reduce((s,r)=>s+r.total,0),sumSlips=rows.reduce((s,r)=>s+r.slipCount,0);
   lines.push(['','合計','',sumSlips,sumSub,sumTax,sumTot,'']);
   const csv=bom+lines.map(r=>r.map(v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;}).join(',')).join('\r\n');
@@ -3016,6 +3061,7 @@ function fbApplyData(d,history){
   DB.groups=d.groups&&d.groups.length?d.groups:DB.groups;
   DB.clientGroups=d.clientGroups||{};
   DB.clientOrder=d.clientOrder||{};DB.closing=d.closing||{};DB.minCharge=d.minCharge||{};DB.deliveryFee=d.deliveryFee||{};DB.packagingFee=d.packagingFee||{};DB.parkingEnabled=d.parkingEnabled||{};DB.slipCheckedThrough=d.slipCheckedThrough||'';DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing||{};DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing||{};DB.slipIssuedAckIds=d.slipIssuedAckIds||{};
+  const parkFixed=ensurePaperParkingFlags();
   _lastAppliedSavedAt=d.savedAt||null;
   DB.history=parseHistory(history);
   persistHistoryLocal();
@@ -3024,6 +3070,7 @@ function fbApplyData(d,history){
   renderProducts();renderHistory();renderGroups();renderClientGrpList();
   const pruned=pruneExpiredHistory({quiet:true});
   const skipped=markOutOfScopeAsBilled();
+  if(parkFixed){clearTimeout(persist._t);persist._t=setTimeout(fbSave,2500);}
   return {pruned,skipped};
 }
 
@@ -3399,6 +3446,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-16',type:'fix',text:'請求額一覧で茶茶花など★駐車場代の行が欠ける不具合を修正。締め日の切り替わりに空行を入れて見やすくした'},
   {date:'2026-09-16',type:'fix',text:'同一納品日ロックと訂正再発行を修正（履歴の照合ずれで警告・訂正が出ない不具合）'},
   {date:'2026-09-16',type:'fix',text:'請求の25日〆を店舗番号順に。215（熱中屋）・301（バグース町田東）が末尾に落ちないようにした'},
   {date:'2026-09-14',type:'fix',text:'請求の並びを紙の表に合わせた。20日〆だけ番号なしが先、25日〆・末日〆の番号なしは後ろ'},
