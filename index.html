@@ -270,10 +270,10 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 #user-modal.hidden{display:none}
 .user-modal-box{background:#fff;border-radius:12px;padding:28px;width:480px;max-height:80vh;overflow-y:auto}
 .user-modal-title{font-size:16px;font-weight:700;color:var(--nv);margin-bottom:18px}
-#meisai-viewer{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:stretch;justify-content:center;z-index:8500;padding:12px;pointer-events:none;visibility:hidden}
+#meisai-viewer{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:stretch;justify-content:center;z-index:8500;padding:8px;pointer-events:none;visibility:hidden}
 #meisai-viewer.open{display:flex;pointer-events:auto;visibility:visible}
-.meisai-viewer-box{background:#fff;border-radius:12px;width:min(1200px,100%);height:min(92vh,920px);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.25)}
-.meisai-viewer-hd{background:#5c3d1e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.meisai-viewer-box{background:#fff;border-radius:12px;width:min(98vw,1480px);height:96vh;max-height:96vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.meisai-viewer-hd{background:#5c3d1e;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
 .meisai-viewer-hd h2{font-size:15px;font-weight:700;margin:0}
 .meisai-viewer-tabs{display:flex;gap:0;background:#4a3118;flex-shrink:0}
 .meisai-viewer-tab{padding:9px 18px;border:none;background:transparent;color:rgba(255,255,255,.65);font-size:13px;font-weight:600;cursor:pointer}
@@ -290,14 +290,22 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 .meisai-summary-tbl tfoot td{background:#f0ebe3;font-weight:700;border-top:2px solid #5c3d1e}
 .meisai-summary-tbl tr.meisai-closing-gap td{padding:8px 10px;border-bottom:1px solid var(--bd);background:#efe8dc;cursor:default;font-weight:700;color:#5c3d1e;font-size:13px;letter-spacing:.04em}
 .meisai-summary-tbl tr.meisai-closing-gap:hover td{background:#efe8dc;cursor:default}
-.meisai-viewer-side{width:220px;flex-shrink:0;border-right:1px solid var(--bd);background:var(--s);display:flex;flex-direction:column;min-height:0}
-.meisai-viewer-side input{margin:10px;padding:7px 10px;border:1px solid var(--b2);border-radius:6px;font-size:12px}
-.meisai-viewer-list{overflow-y:auto;flex:1;padding:0 6px 10px}
-.meisai-viewer-item{display:block;width:100%;text-align:left;padding:8px 10px;border:none;background:transparent;border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx);margin-bottom:2px}
+.meisai-viewer-side{width:320px;flex-shrink:0;border-right:1px solid var(--bd);background:var(--s);display:flex;flex-direction:column;min-height:0}
+.meisai-viewer-side input{margin:10px;padding:9px 12px;border:1px solid var(--b2);border-radius:6px;font-size:13px}
+.meisai-viewer-list{overflow-y:auto;flex:1;min-height:120px;padding:0 8px 12px}
+.meisai-viewer-item{display:block;width:100%;text-align:left;padding:10px 12px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:13px;color:var(--tx);margin-bottom:3px;line-height:1.35}
 .meisai-viewer-item:hover{background:#fff}
 .meisai-viewer-item.on{background:#5c3d1e;color:#fff;font-weight:600}
-.meisai-viewer-main{flex:1;overflow:auto;padding:16px;background:#faf8f5}
-.meisai-sheet{font-family:"Noto Sans JP",'游ゴシック','Yu Gothic',sans-serif;color:#111;background:#fff;min-width:860px;max-width:980px;margin:0 auto 20px;padding:0;border:none}
+.meisai-check-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:none;background:#eef6ee;color:#2e7d32;font-size:12px;font-weight:700;cursor:pointer;text-align:left}
+.meisai-check-toggle:hover{background:#e3f1e3}
+.meisai-check-body{padding:0 10px 10px;border-bottom:1px solid var(--bd);background:#eef6ee}
+.meisai-check-body.collapsed{display:none}
+.meisai-viewer-main{flex:1;min-width:0;overflow:hidden;padding:8px;background:#faf8f5;display:flex;justify-content:center;align-items:flex-start}
+.meisai-viewer-main.meisai-main-scroll{overflow:auto}
+.meisai-fit-host{width:100%;height:100%;overflow:hidden;display:flex;justify-content:center;align-items:flex-start}
+.meisai-viewer-main.meisai-main-scroll .meisai-fit-host{height:auto;min-height:100%;overflow:visible}
+#meisai-sheet-print{max-width:none;margin:0 auto;transform-origin:top center;will-change:transform}
+.meisai-sheet{font-family:"Noto Sans JP",'游ゴシック','Yu Gothic',sans-serif;color:#111;background:#fff;min-width:860px;max-width:980px;width:980px;margin:0 auto 12px;padding:0;border:none}
 .meisai-table-wrap table{border-collapse:collapse;table-layout:fixed;width:100%}
 .meisai-title{text-align:center;font-size:24px;font-weight:700;letter-spacing:.5em;padding:12px 0 14px;border:1px solid #222}
 .meisai-head{display:flex;justify-content:space-between;gap:20px;margin-top:14px;align-items:flex-start}
@@ -325,10 +333,10 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 .meisai-sheet th,.meisai-sheet .meisai-table-wrap td{border:1px solid #222;padding:3px 4px;font-size:11px;white-space:nowrap;vertical-align:middle}
 .meisai-note{font-size:11px;color:#854f0b;margin-top:8px;line-height:1.4}
 .meisai-page-label{font-size:11px;color:#666;text-align:right;margin-bottom:6px}
-#meisai-sheet-print{max-width:980px;margin:0 auto}
 @media (max-width:800px){
   .meisai-viewer-body{flex-direction:column}
-  .meisai-viewer-side{width:100%;max-height:160px;border-right:none;border-bottom:1px solid var(--bd)}
+  .meisai-viewer-side{width:100%;max-height:42vh;border-right:none;border-bottom:1px solid var(--bd)}
+  .meisai-viewer-main{min-height:0}
 }
 .user-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:0.5px solid var(--bd);border-radius:8px;margin-bottom:8px}
 .user-row-name{flex:1;font-size:13px;font-weight:600}
@@ -971,7 +979,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。紙の一覧で★の客先（茶茶花・楽園　町田店・穂のほまれ　西新宿店）は未設定でも駐車場行を出します（金額0でも行あり）。</div></div>
       <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧は紙の請求一覧表と同じ順（25日〆・末日〆の番号なしは後ろ）。クリックで切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。カレンダー左側には、<strong>チェック後に発行した分だけ</strong>「発行あり・客先名・納品日」が出ます。確認したら行のチェック（または <span class="help-tag">表示中を消す</span>）で一覧から消せます。</div></div>
-      <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。左上に客先名＋様、右上に小計・消費税・ご請求金額、下に品名・単価・納品日別数量の表（1ページ20行）です。</div></div>
+      <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。画面上はウィンドウに収まるよう自動で縮小表示します（印刷は実寸）。左の客先一覧は広めに表示。事務チェックは見出しクリックで開閉できます。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。</div></div>
       <div class="help-step"><div class="help-step-num">日次</div><div class="help-step-body"><div class="help-step-title">未反映→請求明細Excel</div>未反映の伝票（押し忘れ分を含む）を対象に、該当客先・請求月のシートを含む Excel を出力。ファイル名例: <code>purims_meisai_20250818.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">月次</div><div class="help-step-body"><div class="help-step-title">請求月Excel出力</div><span class="help-tag">請求</span> または <span class="help-tag">データ</span> タブで年月を指定して再出力。ファイル名例: <code>purims_meisai_202508.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">内容</div><div class="help-step-body"><div class="help-step-title">シート構成</div>シート名は <code>客先名_YYYY年M月</code>。品名・単価・日別数量（最大14日分）・合計数・合計金額・小計・消費税10%・ご請求金額を含みます。<strong>客先マスタに登録した品目は、その月に数量がなくても行として表示</strong>されます（数量マスは空欄）。マスタで配送費・包装料を設定した客先は、それぞれ伝票1枚ごと／総点数分の行が請求明細に追加されます。駐車場代ありの客先は、入力した回だけ「客先名 駐車場代」として別明細になります（いずれも伝票面には出ません）。</div></div>
@@ -1036,11 +1044,14 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="meisai-summary-wrap on" id="meisai-summary-wrap"></div>
     <div class="meisai-viewer-body" id="meisai-detail-wrap" style="display:none">
       <div class="meisai-viewer-side">
-        <div id="meisai-check-wrap" class="no-print" style="padding:10px;border-bottom:1px solid var(--bd);background:#eef6ee">
-          <div style="font-size:11px;font-weight:700;color:#2e7d32;margin-bottom:6px">✓ 事務チェック（締め日 → 納品日）</div>
+        <button type="button" class="meisai-check-toggle" id="meisai-check-toggle" onclick="toggleMeisaiCheckPanel()" aria-expanded="false">
+          <span>✓ 事務チェック（締め日 → 納品日）</span>
+          <span id="meisai-check-toggle-icon">▶</span>
+        </button>
+        <div id="meisai-check-wrap" class="meisai-check-body collapsed no-print">
           <div id="meisai-check-closing-tabs" class="check-closing-tabs"></div>
           <div id="meisai-check-status" style="font-size:11px;color:#1b5e20;font-weight:600;margin-bottom:6px">チェック済み: 未設定</div>
-          <div id="meisai-check-issued" class="check-issued-list" style="max-height:140px;margin:0 0 8px"></div>
+          <div id="meisai-check-issued" class="check-issued-list" style="max-height:120px;margin:0 0 8px"></div>
           <div id="meisai-check-cal" class="check-cal"></div>
           <div class="check-cal-note" id="meisai-check-cal-note">締め日を選んでから納品日をクリック<br>青＝その締めの納品／緑＝済（印刷には出ません）</div>
         </div>
@@ -1246,7 +1257,7 @@ function saveCycBtns(){if(!curC)return;const val=document.getElementById('slip-c
 function cancelCyc(){document.getElementById('cyc-btn-area').style.display='none';document.getElementById('cyc-v').style.display='';document.getElementById('cyc-edit-hint').style.display='';}
 function renderItems(){if(!curC)return;const items=DB.clients[curC]?.items||[];const masterRows=items.map((it,i)=>`<tr><td><span class="cbdg">${it.code}</span></td><td>${it.name}</td><td style="text-align:center"><input class="qty${qtys[i]?' f':''}" data-enter-col="qty" type="number" min="0" value="${qtys[i]||''}" placeholder="0" oninput="setQ(${i},this)"></td><td><input class="enter-skip" style="width:100%;padding:4px 6px;border:1px solid var(--b2);border-radius:4px;font-size:12px;background:var(--w);color:var(--tx)" type="text" value="${bikos[i]||''}" placeholder="備考" oninput="bikos[${i}]=this.value"></td><td></td></tr>`).join('');const extraRows=extraItems.map((it,i)=>`<tr class="extra-row"><td><span class="cbdg">${it.code}</span></td><td>${it.name} <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;padding:1px 5px;border-radius:4px">追加</span></td><td style="text-align:center"><input class="qty${it.qty?' f':''}" data-enter-col="qty" type="number" min="0" value="${it.qty||''}" placeholder="0" oninput="setEQ(${i},this)"></td><td><input class="enter-skip" style="width:100%;padding:4px 6px;border:1px solid var(--b2);border-radius:4px;font-size:12px;background:var(--w);color:var(--tx)" type="text" value="${it.biko||''}" placeholder="備考" oninput="extraItems[${i}].biko=this.value"></td><td style="text-align:center"><button class="btn-rm" onclick="removeExtra(${i})">✕</button></td></tr>`).join('');const hasAny=items.length||extraItems.length;if(!hasAny){document.getElementById('iarea').innerHTML='<div class="emp">品目が登録されていません</div>';return;}const COL='<colgroup><col style="width:12%"><col style="width:38%"><col style="width:15%"><col style="width:35%"><col style="width:32px"></colgroup>';document.getElementById('iarea').innerHTML=`<div class="iarea-wrap"><div class="iarea-thead"><table>${COL}<thead><tr><th>品番</th><th>品　名</th><th style="text-align:center">数　量</th><th>備　考</th><th></th></tr></thead></table></div><div class="iarea-body" id="iarea-body"><table>${COL}<tbody>${masterRows}${extraRows}</tbody></table></div></div>`;setTimeout(applyZoom,0);}
 function fitIareaBody(){const body=document.getElementById('iarea-body');if(!body)return;const wrap=document.querySelector('.iarea-wrap');if(!wrap)return;const thead=wrap.querySelector('.iarea-thead');const addArea=document.getElementById('add-item-area');const addH=(addArea&&addArea.style.display!=='none')?addArea.offsetHeight+8:0;const wrapTop=wrap.getBoundingClientRect().top;const theadH=thead?thead.offsetHeight:0;const brow=document.getElementById('sbtns');const browH=brow?brow.offsetHeight:0;const available=window.innerHeight-wrapTop-theadH-addH-browH-24;body.style.maxHeight=Math.max(available,120)+'px';}
-window.addEventListener('resize',()=>{fitIareaBody();resizeScrollPanel();});
+window.addEventListener('resize',()=>{fitIareaBody();resizeScrollPanel();if(document.getElementById('meisai-viewer')?.classList.contains('open'))fitMeisaiViewerSheet();});
 function resizeScrollPanel(){const scrollPanels=['master','history','data','help','billing'];const hdrH=document.querySelector('.hdr').offsetHeight;const tabH=document.querySelector('.tabs').offsetHeight;const h=window.innerHeight-hdrH-tabH;scrollPanels.forEach(id=>{const p=document.getElementById('panel-'+id);if(p&&p.classList.contains('on'))p.style.height=h+'px';});}
 function setQ(i,el){qtys[i]=parseInt(el.value)||0;el.className='qty'+(el.value?' f':'');}
 function setEQ(i,el){if(extraItems[i])extraItems[i].qty=parseInt(el.value)||0;el.className='qty'+(el.value?' f':'');}
@@ -2489,6 +2500,7 @@ function setMeisaiViewerMode(mode){
   if(printAllBtn)printAllBtn.style.display=_meisaiViewerMode==='detail'?'inline-block':'none';
   if(printBtn)printBtn.textContent=_meisaiViewerMode==='summary'?'🖨 一覧を印刷':'🖨 この客先を印刷';
   if(_meisaiViewerMode==='summary')renderMeisaiSummary();
+  else requestAnimationFrame(()=>requestAnimationFrame(fitMeisaiViewerSheet));
 }
 function renderMeisaiSummary(){
   const el=document.getElementById('meisai-summary-wrap');
@@ -2544,6 +2556,40 @@ function openMeisaiViewer(mode,opts){
   if(result.warnings?.length)toast(result.warnings.slice(0,3).join('、')+(result.warnings.length>3?'…':''),'e');
 }
 function closeMeisaiViewer(){document.getElementById('meisai-viewer').classList.remove('open');}
+function toggleMeisaiCheckPanel(){
+  const body=document.getElementById('meisai-check-wrap');
+  const btn=document.getElementById('meisai-check-toggle');
+  const icon=document.getElementById('meisai-check-toggle-icon');
+  if(!body)return;
+  const open=body.classList.toggle('collapsed')===false;
+  if(btn)btn.setAttribute('aria-expanded',open?'true':'false');
+  if(icon)icon.textContent=open?'▼':'▶';
+  requestAnimationFrame(fitMeisaiViewerSheet);
+}
+function fitMeisaiViewerSheet(){
+  const main=document.getElementById('meisai-viewer-main');
+  const sheet=document.getElementById('meisai-sheet-print');
+  if(!main||!sheet||!document.getElementById('meisai-viewer')?.classList.contains('open'))return;
+  if(_meisaiViewerMode!=='detail')return;
+  sheet.style.transform='none';
+  sheet.style.marginBottom='0';
+  main.classList.remove('meisai-main-scroll');
+  const pad=8;
+  const availW=Math.max(120,main.clientWidth-pad*2);
+  const availH=Math.max(120,main.clientHeight-pad*2);
+  const natW=Math.max(sheet.scrollWidth,sheet.offsetWidth,860);
+  const natH=Math.max(sheet.scrollHeight,sheet.offsetHeight,1);
+  const pages=sheet.querySelectorAll('.meisai-sheet').length;
+  const scaleW=availW/natW;
+  let scale=Math.min(1,scaleW,availH/natH);
+  if(pages>1||natH*Math.min(1,scaleW)>availH*1.08){
+    scale=Math.min(1,scaleW);
+    main.classList.add('meisai-main-scroll');
+  }
+  sheet.style.transformOrigin='top center';
+  sheet.style.transform=`scale(${scale})`;
+  sheet.style.marginBottom=`${Math.ceil(natH*(scale-1))}px`;
+}
 function renderMeisaiViewerList(){
   const q=(document.getElementById('meisai-viewer-search')?.value||'').trim().toLowerCase();
   const el=document.getElementById('meisai-viewer-list');
@@ -2554,14 +2600,17 @@ function renderMeisaiViewerList(){
     const tot=buildMeisaiRows(d).total;
     const park=isParkingMeisai(d);
     const badge=park?'<span style="display:inline-block;margin-left:4px;padding:1px 6px;border-radius:8px;background:#c8e6c9;color:#1b5e20;font-size:10px;font-weight:700">駐車場</span>':'';
-    return`<button type="button" class="meisai-viewer-item${i===_meisaiViewerIdx?' on':''}" onclick="selectMeisaiViewer(${i})"><div>${escH(d.customer)}${badge}</div><div style="font-size:11px;opacity:.85;margin-top:2px">${yenFmt(tot)}</div></button>`;
+    return`<button type="button" class="meisai-viewer-item${i===_meisaiViewerIdx?' on':''}" onclick="selectMeisaiViewer(${i})"><div>${escH(d.customer)}${badge}</div><div style="font-size:12px;opacity:.85;margin-top:2px">${yenFmt(tot)}</div></button>`;
   }).join('');
 }
 function selectMeisaiViewer(idx){
   if(!_meisaiViewerData[idx])return;
   _meisaiViewerIdx=idx;
   renderMeisaiViewerList();
-  document.getElementById('meisai-viewer-main').innerHTML=meisaiSheetHtml(_meisaiViewerData[idx]);
+  const main=document.getElementById('meisai-viewer-main');
+  main.classList.remove('meisai-main-scroll');
+  main.innerHTML='<div class="meisai-fit-host">'+meisaiSheetHtml(_meisaiViewerData[idx])+'</div>';
+  requestAnimationFrame(()=>requestAnimationFrame(fitMeisaiViewerSheet));
 }
 function printMeisaiViewerActive(){
   if(_meisaiViewerMode==='summary')printMeisaiSummary();
@@ -3710,6 +3759,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-16',type:'fix',text:'請求明細書をスクロールなしで全体表示。左の客先一覧を広げ、事務チェックは折りたたみ式に'},
   {date:'2026-09-16',type:'feat',text:'請求明細書で数量あり・単価未設定のセルを黄色表示。単価を保存すると消える'},
   {date:'2026-09-16',type:'feat',text:'発行履歴に「削除履歴」を追加。削除・発行取消・期間超過の記録を残し、復元もできる'},
   {date:'2026-09-16',type:'feat',text:'請求額一覧の締め日区切りに「20日締め／25日締め／末日締め」の見出しを追加'},
