@@ -976,7 +976,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="help-section-hd" onclick="toggleHelp('billing')">📄 請求明細書（確認・Excel・印刷）<span class="help-toggle" id="help-toggle-billing">▶</span></div>
     <div class="help-section-body">
       <p>Purims がブラウザ内で請求明細書を<strong>直接表示・印刷・Excel出力</strong>します。運用 PC に Excel テンプレート（.xlsm）を置く必要はありません。印刷レイアウトは<strong>プゥル・ヴー伝票アプリと同じ書式</strong>です（ネクサス名義）。</p>
-      <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。駐車場明細書には<strong>金額を入れた日だけ</strong>出ます（空欄＝なしの日は数量も日付も出しません）。紙の★客先（茶茶花・楽園　町田店・穂のほまれ　西新宿店）は金額がなくても駐車場のシート枠は残ります。</div></div>
+      <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。駐車場明細書には<strong>金額を入れた日だけ</strong>出ます（空欄＝なしの日は数量も日付も出しません）。行は<strong>単価の安い順</strong>です。紙の★客先（茶茶花・楽園　町田店・穂のほまれ　西新宿店）は金額がなくても駐車場のシート枠は残ります。</div></div>
       <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧は紙の請求一覧表と同じ順（25日〆・末日〆の番号なしは後ろ）。クリックで切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。カレンダー左側には、<strong>チェック後に発行した分だけ</strong>「発行あり・客先名・納品日」が出ます。確認したら行のチェック（または <span class="help-tag">表示中を消す</span>）で一覧から消せます。</div></div>
       <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。画面上はウィンドウに収まるよう自動で縮小表示します（印刷は実寸）。左の客先一覧は広めに表示。事務チェックは見出しクリックで開閉できます。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。</div></div>
@@ -2308,6 +2308,10 @@ function buildMeisaiRows(data){
     r.amount=r.price*r.totalQty;
     r.priceMissing=r.totalQty>0&&!(Number(r.price)>0);
   });
+  /* 駐車場代明細は単価の安い順（同じ単価はまとまっている） */
+  if(isParkingMeisai(data)){
+    itemRows.sort((a,b)=>(Number(a.price)||0)-(Number(b.price)||0)||String(a.name||'').localeCompare(String(b.name||''),'ja'));
+  }
   const sum=itemRows.reduce((s,r)=>s+r.amount,0);
   const min=Number(data.minCharge)||0;
   const subtotal=min>0?Math.max(sum,min):sum;
