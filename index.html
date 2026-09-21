@@ -539,7 +539,6 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="complete-title">伝票を発行しました</div>
       <div class="complete-sub" id="complete-sub"></div>
       <div class="complete-btns">
-        <button class="btn" onclick="backToInput()">◀ 入力に戻る（発行取消）</button>
         <button class="btn pri" id="complete-print-btn" onclick="doPrint()">印刷する</button>
         <button class="btn acc" id="batch-exec-btn" onclick="doBatchPrint()" style="display:none">🖨 まとめて印刷（<span id="batch-exec-count">0</span>件）</button>
         <button class="btn acc" id="next-client-btn" onclick="goNextOrSelect()" style="display:none"></button>
@@ -938,7 +937,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">2</div><div class="help-step-body"><div class="help-step-title">客先をプルダウンで選ぶ</div>「客先を選択してください」から届け先を選びます。</div></div>
       <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">数量を入力して伝票発行</div>品目一覧に数量を入力し、<span class="help-tag">伝票発行</span>ボタンを押します。発行しない客先は <span class="help-tag">⏭ 飛ばす</span> で次の客先へ進めます（リストから選び直す必要はありません）。</div></div>
       <div class="help-step"><div class="help-step-num">4</div><div class="help-step-body"><div class="help-step-title">次の客先へ</div>発行後は <span class="help-tag">▶ 客先名</span> で次へ。<span class="help-tag">客先選択に戻る</span> はリストの先頭からやり直すとき。</div></div>
-      <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">間違えたとき</div>完了直後なら <span class="help-tag">入力に戻る（発行取消）</span>。すでに発行済みで数量を直す場合は <span class="help-tag">発行履歴</span> を開き <span class="help-tag">訂正して再発行</span>。</div></div>
+      <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">間違えたとき</div>発行した伝票は完了画面から取り消せません（印刷後に履歴が消えるのを防ぐため）。数量を直すときは <span class="help-tag">発行履歴</span> を開き <span class="help-tag">訂正して再発行</span>。不要な伝票は履歴の <span class="help-tag">削除</span>（削除履歴に残ります）。</div></div>
       <div class="help-step"><div class="help-step-num">注意</div><div class="help-step-body"><div class="help-step-title">同じ納品日の再打ち込みは不可</div>同じ客先・同じ納品日の伝票が既にあると、<strong>新規の打ち直し発行はできません</strong>。警告から案内どおり <span class="help-tag">発行履歴</span> → <span class="help-tag">訂正して再発行</span> で数量を直します。訂正すると履歴に「訂正再発行」と日時が残ります。</div></div>
       <div class="help-step"><div class="help-step-num">履歴</div><div class="help-step-body"><div class="help-step-title">まとめて再印刷</div><span class="help-tag">発行履歴</span>（発行日別は <strong>月 → 日付</strong> のフォルダ）で伝票左のチェックを入れ → <span class="help-tag">選択した伝票をまとめて印刷</span>。1件だけなら明細内の <span class="help-tag">伝票印刷</span> でも再発行できます。</div></div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">発行伝票のチェック済み</div><span class="help-tag">請求</span> タブでまず<strong>締め日</strong>（20日〆／25日〆／末日〆）を選び、ミニカレンダー（または請求明細書ビューア左上）の<strong>納品日</strong>をクリックすると、その締めのその日以前を事務確認済みとして記録します。チェック済みは締め日ごとに別管理。「○○〆 チェック済み: 納品日 ○○まで」と表示。カレンダー左側の一覧は、<strong>チェック済みにしたあと</strong>に発行した伝票だけを<strong>発行あり・客先名・納品日</strong>で出します。行のチェックを入れると一覧から消えます（<span class="help-tag">表示中を消す</span>でまとめても消せます）。同じ客先・納品日で新規発行しようとしたとき、チェック済み期間なら警告文にその旨が出ます。</div></div>
@@ -1432,55 +1431,6 @@ function showPrev(){
   if(typeof renderBillingCheckCalendar==='function')renderBillingCheckCalendar();
   if(isCorrection)toast('訂正再発行しました');
   if(addedToMaster.length)toast('📋 マスタに追加: '+addedToMaster.join('、'));
-}
-function backToInput(){
-  if(_issueSession){
-    const sess=_issueSession;_issueSession=null;
-    if(sess.queued){
-      for(let i=printQueue.length-1;i>=0;i--){
-        if(printQueue[i].fp===sess.fp){printQueue.splice(i,1);break;}
-      }
-      updateQueueBadge();
-      const batchExecBtn=document.getElementById('batch-exec-btn');
-      const batchExecCount=document.getElementById('batch-exec-count');
-      if(batchExecBtn){
-        if(printMode==='batch'&&printQueue.length>0){
-          batchExecBtn.style.display='inline-block';
-          if(batchExecCount)batchExecCount.textContent=printQueue.length;
-        }else batchExecBtn.style.display='none';
-      }
-    }
-    if(sess.histId!=null){
-      if(sess.isCorrection&&sess.prevEntry){
-        const idx=(DB.history||[]).findIndex(h=>histIdEq(h.id,sess.histId));
-        if(idx>=0){
-          DB.history[idx]=sess.prevEntry;
-          persistHistoryLocal();
-          fbSaveHistoryEntry(sess.prevEntry);
-          renderHistory();
-          updateBillingPendingBadge();
-        }
-        _correctingHistId=sess.histId;
-        updateCorrectionBanner();
-        toast('訂正再発行を取り消して入力画面に戻ります');
-      }else{
-        const doomed=findHistById(sess.histId);
-        if(doomed)recordHistDeletion(doomed,'cancel');
-        DB.history=(DB.history||[]).filter(h=>!histIdEq(h.id,sess.histId));
-        persistHistoryLocal();
-        fbDeleteHistoryEntry(sess.histId);
-        renderHistory();
-        updateBillingPendingBadge();
-        toast('発行を取り消して入力画面に戻ります');
-      }
-    }else{
-      toast('入力画面に戻ります');
-    }
-  }
-  const _ct=document.querySelector('#complete-view .complete-title');if(_ct)_ct.textContent='伝票を発行しました';
-  document.getElementById('complete-view').style.display='none';
-  document.getElementById('input-view').style.display='block';
-  if(_correctingHistId!=null)updateCorrectionBanner();
 }
 function resetToSelect(){
   _issueSession=null;
@@ -3772,6 +3722,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-21',type:'fix',text:'発行完了画面の「入力に戻る（発行取消）」を削除。印刷後に履歴が消えないようにした'},
   {date:'2026-09-21',type:'fix',text:'請求明細書の左客先一覧を請求額一覧と同じ順にし、締め日見出し（20日締めなど）を付けた'},
   {date:'2026-09-18',type:'fix',text:'駐車場代の請求明細書の行を単価の安い順に並べるようにした'},
   {date:'2026-09-16',type:'fix',text:'駐車場代が「なし」の日は請求明細書に数量1を出さないようにした'},
