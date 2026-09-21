@@ -296,6 +296,8 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 .meisai-viewer-item{display:block;width:100%;text-align:left;padding:10px 12px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:13px;color:var(--tx);margin-bottom:3px;line-height:1.35}
 .meisai-viewer-item:hover{background:#fff}
 .meisai-viewer-item.on{background:#5c3d1e;color:#fff;font-weight:600}
+.meisai-viewer-closing{margin:10px 4px 4px;padding:7px 10px;background:#efe8dc;border-radius:6px;font-size:12px;font-weight:700;color:#5c3d1e;letter-spacing:.04em}
+.meisai-viewer-closing:first-child{margin-top:2px}
 .meisai-check-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:none;background:#eef6ee;color:#2e7d32;font-size:12px;font-weight:700;cursor:pointer;text-align:left}
 .meisai-check-toggle:hover{background:#e3f1e3}
 .meisai-check-body{padding:0 10px 10px;border-bottom:1px solid var(--bd);background:#eef6ee}
@@ -979,7 +981,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。駐車場明細書には<strong>金額を入れた日だけ</strong>出ます（空欄＝なしの日は数量も日付も出しません）。行は<strong>単価の安い順</strong>です。紙の★客先（茶茶花・楽園　町田店・穂のほまれ　西新宿店）は金額がなくても駐車場のシート枠は残ります。</div></div>
       <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧は紙の請求一覧表と同じ順（25日〆・末日〆の番号なしは後ろ）。クリックで切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。カレンダー左側には、<strong>チェック後に発行した分だけ</strong>「発行あり・客先名・納品日」が出ます。確認したら行のチェック（または <span class="help-tag">表示中を消す</span>）で一覧から消せます。</div></div>
-      <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。画面上はウィンドウに収まるよう自動で縮小表示します（印刷は実寸）。左の客先一覧は広めに表示。事務チェックは見出しクリックで開閉できます。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。</div></div>
+      <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。画面上はウィンドウに収まるよう自動で縮小表示します（印刷は実寸）。左の客先一覧は請求額一覧と同じ順で、<strong>20日締め／25日締め／末日締め</strong>の見出し付き。事務チェックは見出しクリックで開閉できます。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。</div></div>
       <div class="help-step"><div class="help-step-num">日次</div><div class="help-step-body"><div class="help-step-title">未反映→請求明細Excel</div>未反映の伝票（押し忘れ分を含む）を対象に、該当客先・請求月のシートを含む Excel を出力。ファイル名例: <code>purims_meisai_20250818.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">月次</div><div class="help-step-body"><div class="help-step-title">請求月Excel出力</div><span class="help-tag">請求</span> または <span class="help-tag">データ</span> タブで年月を指定して再出力。ファイル名例: <code>purims_meisai_202508.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">内容</div><div class="help-step-body"><div class="help-step-title">シート構成</div>シート名は <code>客先名_YYYY年M月</code>。品名・単価・日別数量（最大14日分）・合計数・合計金額・小計・消費税10%・ご請求金額を含みます。<strong>客先マスタに登録した品目は、その月に数量がなくても行として表示</strong>されます（数量マスは空欄）。マスタで配送費・包装料を設定した客先は、それぞれ伝票1枚ごと／総点数分の行が請求明細に追加されます。駐車場代ありの客先は、入力した回だけ「客先名 駐車場代」として別明細になります（いずれも伝票面には出ません）。</div></div>
@@ -2600,13 +2602,18 @@ function renderMeisaiViewerList(){
   const q=(document.getElementById('meisai-viewer-search')?.value||'').trim().toLowerCase();
   const el=document.getElementById('meisai-viewer-list');
   if(!el)return;
+  /* 並びは請求額一覧と同じ（collectMeisaiData で sortMeisaiData 済み） */
   const filtered=_meisaiViewerData.map((d,i)=>({d,i})).filter(({d})=>!q||String(d.customer||'').toLowerCase().includes(q));
   if(!filtered.length){el.innerHTML='<div style="padding:12px;font-size:12px;color:var(--mu)">該当なし</div>';return;}
-  el.innerHTML=filtered.map(({d,i})=>{
+  el.innerHTML=filtered.map(({d,i},pos)=>{
+    const prev=pos>0?filtered[pos-1].d:null;
+    const day=d.closingDay||99;
+    const head=(!prev||closingSortRank(prev.closingDay||99)!==closingSortRank(day))
+      ?`<div class="meisai-viewer-closing">${escH(meisaiClosingHeading(day))}</div>`:'';
     const tot=buildMeisaiRows(d).total;
     const park=isParkingMeisai(d);
     const badge=park?'<span style="display:inline-block;margin-left:4px;padding:1px 6px;border-radius:8px;background:#c8e6c9;color:#1b5e20;font-size:10px;font-weight:700">駐車場</span>':'';
-    return`<button type="button" class="meisai-viewer-item${i===_meisaiViewerIdx?' on':''}" onclick="selectMeisaiViewer(${i})"><div>${escH(d.customer)}${badge}</div><div style="font-size:12px;opacity:.85;margin-top:2px">${yenFmt(tot)}</div></button>`;
+    return head+`<button type="button" class="meisai-viewer-item${i===_meisaiViewerIdx?' on':''}" onclick="selectMeisaiViewer(${i})"><div>${escH(d.customer)}${badge}</div><div style="font-size:12px;opacity:.85;margin-top:2px">${yenFmt(tot)}</div></button>`;
   }).join('');
 }
 function selectMeisaiViewer(idx){
@@ -3765,6 +3772,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-21',type:'fix',text:'請求明細書の左客先一覧を請求額一覧と同じ順にし、締め日見出し（20日締めなど）を付けた'},
   {date:'2026-09-18',type:'fix',text:'駐車場代の請求明細書の行を単価の安い順に並べるようにした'},
   {date:'2026-09-16',type:'fix',text:'駐車場代が「なし」の日は請求明細書に数量1を出さないようにした'},
   {date:'2026-09-16',type:'fix',text:'請求明細書をスクロールなしで全体表示。左の客先一覧を広げ、事務チェックは折りたたみ式に'},
