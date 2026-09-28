@@ -926,7 +926,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">必要なら</div><div class="help-step-body"><div class="help-step-title">Excel で保存・印刷</div>ダウンロードした .xlsx を Excel で開く（取り込み操作なし）。印刷または所定フォルダに保存。</div></div>
       <div class="help-note">💡 <strong>未反映の伝票</strong> … <span class="help-tag">請求</span> タブの <span class="help-tag">未反映分を見る</span> や <span class="help-tag">未反映→請求明細Excel</span> で扱います（本日以前の分も含む）。Excel出力すると反映済みになり、同じ伝票は二重に出力されません。件数は <strong>2026年8月1日以降の納品</strong> のみです。7月以前は初回読み込み時に反映済み扱いになります。</div>
       <div class="help-note">💡 <strong>押し忘れた場合</strong> … 翌日（または後日）に <span class="help-tag">未反映→請求明細Excel</span> を押せば、未反映分を含む<strong>その請求月の全伝票</strong>がシートに載ります（前回分も消えない）。反映済みフラグは今回の未反映分にだけ付きます。<span class="help-tag">請求</span> タブの <span class="help-tag">請求月Excel出力</span> でも再出力できます。</div>
-      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表どおり、<strong>締め日のあと店舗番号の若い順</strong>（例: 25日〆は 213→215→234…→287→301→303）。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なしは後ろです。締め日の区切りには <strong>20日締め／25日締め／末日締め</strong> の見出し行を入れています。駐車場代は元の客先の直後（茶茶花・楽園町田・穂のほまれは紙の★どおり必ず行を出します）。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。CSV 出力も可能です。</div>
+      <div class="help-note">💡 <strong>請求額一覧</strong> … <span class="help-tag">請求</span> → <span class="help-tag">請求額一覧を見る</span> で店舗ごとの小計・税・合計を一覧表示。並びは紙の請求一覧表どおり、<strong>締め日のあと店舗番号の若い順</strong>（例: 25日〆は 213→215→234…→287→301→303）。<strong>20日〆</strong>だけ番号なし（楽園など）が先、<strong>25日〆・末日〆</strong>の番号なしは後ろです。締め日の区切りには <strong>20日締め／25日締め／末日締め</strong> の見出し行を入れています。駐車場代は元の客先の直後（茶茶花・楽園町田・穂のほまれは紙の★どおり必ず行を出します）。明細書の左一覧・全店舗印刷・Excel も同じ順。行クリックで明細へ。<span class="help-tag">CSV</span>・<span class="help-tag">Excel</span> の両方で出力できます。</div>
       <div class="help-note">💡 毎回<strong>新しい Excel ファイル</strong>が作成されます。前日保存したファイルを Purims が自動更新することはありません。</div>
     </div>
   </div>
@@ -1036,6 +1036,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
         <button type="button" id="meisai-print-all-btn" onclick="printAllMeisaiSheets()" style="display:none;padding:6px 12px;background:#fff;color:#5c3d1e;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">🖨 全店舗を印刷</button>
         <button type="button" id="meisai-print-btn" onclick="printMeisaiViewerActive()" style="padding:6px 12px;background:#fff;color:#5c3d1e;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">🖨 印刷</button>
         <button type="button" id="meisai-csv-btn" onclick="exportMeisaiSummaryCSV()" style="display:none;padding:6px 12px;background:#fff;color:#5c3d1e;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">📥 CSV</button>
+        <button type="button" id="meisai-xlsx-btn" onclick="exportMeisaiSummaryXlsx()" style="display:none;padding:6px 12px;background:#fff;color:#5c3d1e;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">📥 Excel</button>
         <button type="button" onclick="closeMeisaiViewer()" style="padding:6px 12px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:6px;font-size:12px;cursor:pointer">閉じる</button>
       </div>
     </div>
@@ -2449,6 +2450,7 @@ function setMeisaiViewerMode(mode){
   const sumWrap=document.getElementById('meisai-summary-wrap');
   const detWrap=document.getElementById('meisai-detail-wrap');
   const csvBtn=document.getElementById('meisai-csv-btn');
+  const xlsxBtn=document.getElementById('meisai-xlsx-btn');
   const printBtn=document.getElementById('meisai-print-btn');
   const printAllBtn=document.getElementById('meisai-print-all-btn');
   if(sumTab)sumTab.classList.toggle('on',_meisaiViewerMode==='summary');
@@ -2456,6 +2458,7 @@ function setMeisaiViewerMode(mode){
   if(sumWrap){sumWrap.classList.toggle('on',_meisaiViewerMode==='summary');sumWrap.style.display=_meisaiViewerMode==='summary'?'block':'none';}
   if(detWrap)detWrap.style.display=_meisaiViewerMode==='detail'?'flex':'none';
   if(csvBtn)csvBtn.style.display=_meisaiViewerMode==='summary'?'inline-block':'none';
+  if(xlsxBtn)xlsxBtn.style.display=_meisaiViewerMode==='summary'?'inline-block':'none';
   if(printAllBtn)printAllBtn.style.display=_meisaiViewerMode==='detail'?'inline-block':'none';
   if(printBtn)printBtn.textContent=_meisaiViewerMode==='summary'?'🖨 一覧を印刷':'🖨 この客先を印刷';
   if(_meisaiViewerMode==='summary')renderMeisaiSummary();
@@ -2623,10 +2626,13 @@ function printMeisaiSummary(){
     @media print{body{margin:8px}}
   `,sheet.innerHTML);
 }
-function exportMeisaiSummaryCSV(){
+function meisaiSummaryExportBasename(){
+  return _meisaiViewerSource==='pending'
+    ?`purims_billing_summary_pending_${fileDate()}`
+    :`purims_billing_summary_${_meisaiViewerYear}${String(_meisaiViewerMonth).padStart(2,'0')}`;
+}
+function buildMeisaiSummaryExportLines(){
   const rows=buildMeisaiSummaryRows();
-  if(!rows.length){toast('出力するデータがありません','e');return;}
-  const bom='\uFEFF';
   const lines=[['No','納品客先','締め日','伝票数','小計（税抜）','消費税','ご請求金額','最低保証適用']];
   let n=0;
   rows.forEach((r,i)=>{
@@ -2639,9 +2645,50 @@ function exportMeisaiSummaryCSV(){
   });
   const sumSub=rows.reduce((s,r)=>s+r.subtotal,0),sumTax=rows.reduce((s,r)=>s+r.tax,0),sumTot=rows.reduce((s,r)=>s+r.total,0),sumSlips=rows.reduce((s,r)=>s+r.slipCount,0);
   lines.push(['','合計','',sumSlips,sumSub,sumTax,sumTot,'']);
+  return{rows,lines};
+}
+function exportMeisaiSummaryCSV(){
+  const {rows,lines}=buildMeisaiSummaryExportLines();
+  if(!rows.length){toast('出力するデータがありません','e');return;}
+  const bom='\uFEFF';
   const csv=bom+lines.map(r=>r.map(v=>{const s=String(v??'');return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;}).join(',')).join('\r\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=_meisaiViewerSource==='pending'?`purims_billing_summary_pending_${fileDate()}.csv`:`purims_billing_summary_${_meisaiViewerYear}${String(_meisaiViewerMonth).padStart(2,'0')}.csv`;a.click();URL.revokeObjectURL(a.href);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=meisaiSummaryExportBasename()+'.csv';a.click();URL.revokeObjectURL(a.href);
   toast(`${rows.length}店舗の請求額一覧CSVを出力しました`);
+}
+async function exportMeisaiSummaryXlsx(){
+  const {rows,lines}=buildMeisaiSummaryExportLines();
+  if(!rows.length){toast('出力するデータがありません','e');return;}
+  if(typeof ExcelJS==='undefined'){toast('Excelライブラリの読み込みに失敗しました','e');return;}
+  try{
+    const wb=new ExcelJS.Workbook();
+    const ws=wb.addWorksheet('請求額一覧');
+    ws.columns=[{width:6},{width:28},{width:8},{width:8},{width:14},{width:12},{width:14},{width:12}];
+    const yen='"¥"#,##0;;';
+    lines.forEach((line,i)=>{
+      const row=ws.addRow(line);
+      const isHead=i===0;
+      const isGap=i>0&&line[0]===''&&line[1]&&!line[3]&&line[4]==='';
+      const isTotal=i===lines.length-1;
+      if(isHead){
+        row.font={bold:true};row.alignment={horizontal:'center',vertical:'middle'};
+        row.eachCell(c=>{c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFEFE8DC'}};});
+      }else if(isGap){
+        row.font={bold:true,color:{argb:'FF5C3D1E'}};
+        row.getCell(2).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFEFE8DC'}};
+      }else if(isTotal){
+        row.font={bold:true};
+        [5,6,7].forEach(c=>{row.getCell(c).numFmt=yen;});
+      }else{
+        [5,6,7].forEach(c=>{row.getCell(c).numFmt=yen;});
+        row.getCell(1).alignment={horizontal:'center'};
+        row.getCell(3).alignment={horizontal:'center'};
+        row.getCell(4).alignment={horizontal:'center'};
+      }
+    });
+    const buf=await wb.xlsx.writeBuffer();
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=meisaiSummaryExportBasename()+'.xlsx';a.click();URL.revokeObjectURL(a.href);
+    toast(`${rows.length}店舗の請求額一覧Excelを出力しました`);
+  }catch(e){toast('Excel出力に失敗しました: '+e.message,'e');}
 }
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
@@ -3723,6 +3770,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-28',type:'feat',text:'請求額一覧に Excel 出力ボタンを追加（CSV の隣）'},
   {date:'2026-09-28',type:'fix',text:'伝票印刷の左側タイトルから「(納品控)」を外した（右側のみ残す）'},
   {date:'2026-09-21',type:'fix',text:'発行完了画面の「入力に戻る（発行取消）」を削除。印刷後に履歴が消えないようにした'},
   {date:'2026-09-21',type:'fix',text:'請求明細書の左客先一覧を請求額一覧と同じ順にし、締め日見出し（20日締めなど）を付けた'},
