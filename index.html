@@ -618,6 +618,9 @@ select.cs:focus{outline:none;border-color:var(--ac)}
             <button class="add-item-tab" onclick="switchAddTab('free',this)">📝 自由入力で追加</button>
           </div>
           <div id="add-panel-master" class="add-item-panel on">
+            <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
+            <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
+            <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
             <select class="add-item-sel" id="master-add-sel"><option value="">— 商品を選択 —</option></select>
             <input type="number" class="qty" data-enter-col="qty" style="width:70px" id="master-add-qty" min="1" value="1">
             <input type="text" class="enter-skip" style="padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:12px;background:var(--w);color:var(--tx);width:130px" id="master-add-biko" placeholder="備考（任意）">
@@ -714,6 +717,9 @@ select.cs:focus{outline:none;border-color:var(--ac)}
             <button id="add-tab-free" onclick="switchAddTab2('free')" style="flex:1;padding:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--s);color:var(--mu)">✏️ 自由入力</button>
           </div>
           <div id="add-area-master" style="display:flex;gap:8px;padding:10px 12px;background:var(--s);border-bottom:0.5px solid var(--bd);flex-wrap:wrap;align-items:center">
+            <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
+            <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
+            <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
             <select id="ni-master-sel" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);flex:1;min-width:180px"><option value="">— 品目を選択 —</option></select>
             <button style="padding:7px 14px;border-radius:5px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--ok);color:#fff" onclick="addItemFromMaster()">＋ 追加</button>
           </div>
@@ -970,7 +976,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <p><span class="help-tag">マスタ管理</span> → 客先編集 で、客先ごとに次を設定します。</p>
       <div class="help-step"><div class="help-step-num">1</div><div class="help-step-body"><div class="help-step-title">締め日</div>20日〆・25日〆・末日〆から選択。請求月の判定に使います（客先ごとに異なってOK）。</div></div>
       <div class="help-step"><div class="help-step-num">2</div><div class="help-step-body"><div class="help-step-title">請求単価</div>各品目の「請求単価」列にまとめて入力（<strong>Enter</strong> で次の単価へ縦移動。品番はクリック時のみ） → 下の <span class="help-tag">請求単価・品目を保存</span> を1回押す。1件ごとに保存する必要はありません。<strong>伝票には表示されません。</strong> 請求明細の画面表示・印刷・Excel に使います。</div></div>
-      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">品目・納品サイクル</div>品目名と納品曜日（月〜日）を客先ごとに登録。マスタ品目から追加もできます。</div></div>
+      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">品目・納品サイクル</div>品目名と納品曜日（月〜日）を客先ごとに登録。<span class="help-tag">マスタから選ぶ</span> では <span class="help-tag">品番順</span>／<span class="help-tag">あいうえお順</span> を切り替えられます（伝票発行の「マスタから追加」も同じ）。</div></div>
       <div class="help-step"><div class="help-step-num">4</div><div class="help-step-body"><div class="help-step-title">最低保証（必要な客先のみ）</div>月額の税抜最低保証円を入力。請求明細の小計がこれを下回るときは、保証額で請求します（消費税はその上に10%）。空欄は保証なし。</div></div>
       <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">配送費（必要な客先のみ）</div>1回あたりの税抜配送費を入力。請求明細書では<strong>伝票1枚につき1回</strong>「配送費」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
       <div class="help-step"><div class="help-step-num">6</div><div class="help-step-body"><div class="help-step-title">包装料（必要な客先のみ）</div>1点あたりの税抜包装料を入力。請求明細書では<strong>その納品の総点数×単価</strong>で「包装料」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
@@ -1249,7 +1255,7 @@ function fillGrpSel(id,cur){const s=document.getElementById(id);if(!s)return;con
 function nxtDel(cyc){if(!cyc)return null;const m={月:1,火:2,水:3,木:4,金:5,土:6,日:0};const tw=new Date().getDay();let min=99;for(const c of cyc){if(m[c]!==undefined){const d=(m[c]-tw+7)%7;if(d<min)min=d;}}if(min===99)return null;const r=new Date();r.setDate(r.getDate()+min);return r;}
 function fmtD(d){if(!d)return'—';return fmtDateStr(d);}
 function nextPCode(){let max=0;DB.products.forEach(p=>{const m=p.code.match(/P(\d+)/i);if(m)max=Math.max(max,parseInt(m[1]));});Object.values(DB.clients).forEach(cl=>{(cl.items||[]).forEach(it=>{const m=it.code.match(/P(\d+)/i);if(m)max=Math.max(max,parseInt(m[1]));});});return 'P'+String(max+1).padStart(3,'0');}
-function init(){load();pruneExpiredHistory({quiet:true});pruneDeletedHistory({quiet:true});const now=new Date();document.getElementById('hdr-d').innerHTML=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${WD[now.getDay()]}曜日`;fillSel('csel');fillSel('msel');fillGrpSel('e-grp');fillGrpSel('nc-grp');renderProducts();renderHistory();renderGroups();renderClientGrpList();setNPCode();setNC2();initMeisaiMonth();updateBillingPendingBadge();}
+function init(){load();pruneExpiredHistory({quiet:true});pruneDeletedHistory({quiet:true});const now=new Date();document.getElementById('hdr-d').innerHTML=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${WD[now.getDay()]}曜日`;fillSel('csel');fillSel('msel');fillGrpSel('e-grp');fillGrpSel('nc-grp');renderProducts();renderHistory();renderGroups();renderClientGrpList();setNPCode();setNC2();initMeisaiMonth();updateBillingPendingBadge();syncMasterPickSortUi();}
 function toast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.style.borderLeftColor=type==='e'?'#c0392b':'var(--ac)';t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 
 // ===== 伝票発行 =====
@@ -1273,7 +1279,33 @@ function resetQ(){qtys={};bikos={};extraItems=[];renderItems();setTimeout(fitIar
 function removeExtra(i){extraItems.splice(i,1);renderItems();setTimeout(fitIareaBody,80);}
 function toggleAddArea(){if(!curC){toast('客先を先に選択してください','e');return;}const el=document.getElementById('add-item-area');const showing=el.style.display!=='none';el.style.display=showing?'none':'block';if(!showing)fillMasterAddSel();}
 function switchAddTab(tab,btn){document.querySelectorAll('.add-item-tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.add-item-panel').forEach(p=>p.classList.remove('on'));btn.classList.add('on');document.getElementById('add-panel-'+tab).classList.add('on');}
-function fillMasterAddSel(){const sel=document.getElementById('master-add-sel');if(!sel)return;sel.innerHTML='<option value="">— 商品を選択 —</option>'+DB.products.map(p=>`<option value="${p.code}">${p.code}　${p.name}</option>`).join('');}
+function fillMasterAddSel(){const sel=document.getElementById('master-add-sel');if(!sel)return;sel.innerHTML='<option value="">— 商品を選択 —</option>'+sortedProductsForPick().map(p=>`<option value="${escH(p.code)}">${escH(p.code)}　${escH(p.name)}</option>`).join('');syncMasterPickSortUi();}
+function sortedProductsForPick(excludeCodes){
+  const ex=new Set(excludeCodes||[]);
+  let list=(DB.products||[]).filter(p=>p&&p.code!=null&&!ex.has(p.code));
+  if(masterPickSort==='name'){
+    list=list.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ja')||String(a.code||'').localeCompare(String(b.code||''),'ja'));
+  }else{
+    list=list.slice().sort((a,b)=>String(a.code||'').localeCompare(String(b.code||''),'ja')||String(a.name||'').localeCompare(String(b.name||''),'ja'));
+  }
+  return list;
+}
+let masterPickSort=(function(){try{const v=localStorage.getItem('purims_master_pick_sort');return v==='name'?'name':'code';}catch(e){return'code';}})();
+function setMasterPickSort(mode){
+  masterPickSort=mode==='name'?'name':'code';
+  try{localStorage.setItem('purims_master_pick_sort',masterPickSort);}catch(e){}
+  syncMasterPickSortUi();
+  fillMasterSel();
+  fillMasterAddSel();
+}
+function syncMasterPickSortUi(){
+  document.querySelectorAll('[data-master-pick-sort]').forEach(btn=>{
+    const on=btn.getAttribute('data-master-pick-sort')===masterPickSort;
+    btn.style.background=on?'var(--nv)':'var(--w)';
+    btn.style.color=on?'#fff':'var(--mu)';
+    btn.style.borderColor=on?'var(--nv)':'var(--b2)';
+  });
+}
 function addFromMaster(){const sel=document.getElementById('master-add-sel');const qty=parseInt(document.getElementById('master-add-qty').value)||0;const biko=document.getElementById('master-add-biko').value.trim();if(!sel.value){toast('商品を選択してください','e');return;}if(qty<=0){toast('数量を1以上にしてください','e');return;}const prod=DB.products.find(p=>p.code===sel.value);if(!prod)return;extraItems.push({code:prod.code,name:prod.name,qty,biko});sel.value='';document.getElementById('master-add-qty').value=1;document.getElementById('master-add-biko').value='';renderItems();toast('「'+prod.name+'」を追加しました');}
 function onFreeNameInput(el){const v=el.value.trim();const hint=document.getElementById('free-match-hint');if(!v){hint.textContent='';return;}const matched=DB.products.find(p=>p.name===v||p.code===v.toUpperCase());if(matched){hint.innerHTML='<span style="color:#2e7d32">✅ マスタに一致: <strong>'+matched.code+'　'+matched.name+'</strong></span>';}else{const partial=DB.products.filter(p=>p.name.includes(v)).slice(0,3);if(partial.length){hint.innerHTML='<span style="color:var(--mu)">候補: '+partial.map(p=>'<span style="cursor:pointer;color:var(--ac);text-decoration:underline" onclick="setFreeHint(\''+p.name.replace(/'/g,"\\'")+'\')">' +p.name+'</span>').join('　')+'</span>';}else{hint.innerHTML='<span style="color:var(--mu)">マスタにない品名です</span>';}}}
 function setFreeHint(name){document.getElementById('free-add-name').value=name;onFreeNameInput(document.getElementById('free-add-name'));}
@@ -2800,7 +2832,7 @@ function toggleCycBtn(btn,day,hiddenId){btn.classList.toggle('on');syncCycHidden
 function syncCycHidden(wrapperId,hiddenId){const wrap=document.getElementById(wrapperId);const hidden=document.getElementById(hiddenId);if(!wrap||!hidden)return;const val=CYC_DAYS.filter(d=>[...wrap.querySelectorAll('.cyc-btn')][CYC_DAYS.indexOf(d)]?.classList.contains('on')).join('');hidden.value=val;}
 function onMC(){editC=document.getElementById('msel').value||null;masterItemsDirty=false;if(!editC){document.getElementById('medit').style.display='none';const bar=document.getElementById('mitems-save-bar');if(bar)bar.style.display='none';return;}document.getElementById('medit').style.display='block';document.getElementById('e-name').value=editC;renderCycBtns('e-cyc-btns','e-cyc',DB.cycles[editC]||'');fillGrpSel('e-grp',DB.clientGroups[editC]||'');document.getElementById('e-closing').value=DB.closing[editC]||'';const mcEl=document.getElementById('e-mincharge');if(mcEl)mcEl.value=(DB.minCharge&&DB.minCharge[editC])||'';const dfEl=document.getElementById('e-delivery-fee');if(dfEl)dfEl.value=(DB.deliveryFee&&DB.deliveryFee[editC])||'';const pfEl=document.getElementById('e-packaging-fee');if(pfEl)pfEl.value=(DB.packagingFee&&DB.packagingFee[editC])||'';const peEl=document.getElementById('e-parking-enabled');if(peEl)peEl.checked=isParkingEnabled(editC);setNC2();fillMasterSel();renderMItems();}
 function switchAddTab2(tab){const isMaster=tab==='master';document.getElementById('add-tab-master').style.background=isMaster?'var(--nv)':'var(--s)';document.getElementById('add-tab-master').style.color=isMaster?'#fff':'var(--mu)';document.getElementById('add-tab-free').style.background=isMaster?'var(--s)':'var(--nv)';document.getElementById('add-tab-free').style.color=isMaster?'var(--mu)':'#fff';document.getElementById('add-area-master').style.display=isMaster?'flex':'none';document.getElementById('add-area-free').style.display=isMaster?'none':'flex';}
-function fillMasterSel(){const sel=document.getElementById('ni-master-sel');if(!sel)return;const existing=(DB.clients[editC]?.items||[]).map(i=>i.code);sel.innerHTML='<option value="">— 品目を選択 —</option>';(DB.products||[]).forEach(p=>{if(!existing.includes(p.code)){const opt=document.createElement('option');opt.value=p.code;opt.textContent=p.code+'　'+p.name;sel.appendChild(opt);}});}
+function fillMasterSel(){const sel=document.getElementById('ni-master-sel');if(!sel)return;const existing=(DB.clients[editC]?.items||[]).map(i=>i.code);sel.innerHTML='<option value="">— 品目を選択 —</option>';sortedProductsForPick(existing).forEach(p=>{const opt=document.createElement('option');opt.value=p.code;opt.textContent=p.code+'　'+p.name;sel.appendChild(opt);});syncMasterPickSortUi();}
 function addItemFromMaster(){const sel=document.getElementById('ni-master-sel');const code=sel.value;if(!code){toast('品目を選択してください','e');return;}const prod=(DB.products||[]).find(p=>p.code===code);if(!prod){toast('品目が見つかりません','e');return;}if(!DB.clients[editC])return;flushMItemsFromDom();DB.clients[editC].items.push({code:prod.code,name:prod.name});persist();setMasterItemsDirty(false);fillMasterSel();renderMItems();toast(`「${prod.name}」を追加しました`);}
 function setNC2(){const el=document.getElementById('ni-code');if(el){el.placeholder=nextPCode()+' (自動)';el.value='';}}
 let masterItemsDirty=false;
@@ -3843,6 +3875,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-28',type:'feat',text:'マスタから品目を選ぶとき、品番順／あいうえお順を切り替えられるようにした'},
   {date:'2026-09-28',type:'fix',text:'品目0件の客先がクラウド保存で消える不具合を修正。履歴からの復元ボタンも追加'},
   {date:'2026-09-28',type:'fix',text:'発行履歴で伝票をクリックしても詳細が開かない不具合を修正'},
   {date:'2026-09-28',type:'feat',text:'請求額一覧に Excel 出力ボタンを追加（CSV の隣）'},
