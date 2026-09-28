@@ -939,7 +939,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">4</div><div class="help-step-body"><div class="help-step-title">次の客先へ</div>発行後は <span class="help-tag">▶ 客先名</span> で次へ。<span class="help-tag">客先選択に戻る</span> はリストの先頭からやり直すとき。</div></div>
       <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">間違えたとき</div>発行した伝票は完了画面から取り消せません（印刷後に履歴が消えるのを防ぐため）。数量を直すときは <span class="help-tag">発行履歴</span> を開き <span class="help-tag">訂正して再発行</span>。不要な伝票は履歴の <span class="help-tag">削除</span>（削除履歴に残ります）。</div></div>
       <div class="help-step"><div class="help-step-num">注意</div><div class="help-step-body"><div class="help-step-title">同じ納品日の再打ち込みは不可</div>同じ客先・同じ納品日の伝票が既にあると、<strong>新規の打ち直し発行はできません</strong>。警告から案内どおり <span class="help-tag">発行履歴</span> → <span class="help-tag">訂正して再発行</span> で数量を直します。訂正すると履歴に「訂正再発行」と日時が残ります。</div></div>
-      <div class="help-step"><div class="help-step-num">履歴</div><div class="help-step-body"><div class="help-step-title">まとめて再印刷</div><span class="help-tag">発行履歴</span>（発行日別は <strong>月 → 日付</strong> のフォルダ）で伝票左のチェックを入れ → <span class="help-tag">選択した伝票をまとめて印刷</span>。1件だけなら明細内の <span class="help-tag">伝票印刷</span> でも再発行できます。</div></div>
+      <div class="help-step"><div class="help-step-num">履歴</div><div class="help-step-body"><div class="help-step-title">まとめて再印刷</div><span class="help-tag">発行履歴</span>（発行日別は <strong>月 → 日付</strong> のフォルダ）で伝票の行をクリックすると品目の詳細が開きます。伝票左のチェックを入れ → <span class="help-tag">選択した伝票をまとめて印刷</span>。1件だけなら明細内の <span class="help-tag">伝票印刷</span> でも再発行できます。</div></div>
       <div class="help-note">💡 印刷面は左右2枚。左は「委託洗濯伝票」、右だけ「委託洗濯伝票　(納品控)」です。</div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">発行伝票のチェック済み</div><span class="help-tag">請求</span> タブでまず<strong>締め日</strong>（20日〆／25日〆／末日〆）を選び、ミニカレンダー（または請求明細書ビューア左上）の<strong>納品日</strong>をクリックすると、その締めのその日以前を事務確認済みとして記録します。チェック済みは締め日ごとに別管理。「○○〆 チェック済み: 納品日 ○○まで」と表示。カレンダー左側の一覧は、<strong>チェック済みにしたあと</strong>に発行した伝票だけを<strong>発行あり・客先名・納品日</strong>で出します。行のチェックを入れると一覧から消えます（<span class="help-tag">表示中を消す</span>でまとめても消せます）。同じ客先・納品日で新規発行しようとしたとき、チェック済み期間なら警告文にその旨が出ます。</div></div>
       <div class="help-note">💡 <strong>Enter</strong>：数量は次の数量へ、請求単価は次の単価へ（列の縦移動）。品番・備考は通常スキップ（必要なときだけクリック）。</div>
@@ -3034,6 +3034,7 @@ function setHistView(mode){
   renderHistory();
 }
 function toggleHistFolder(encKey){const key=decodeURIComponent(encKey);histFolderCollapsed[key]=!histFolderCollapsed[key];renderHistory();}
+function histIdLit(id){return JSON.stringify(String(id)).replace(/"/g,'&quot;');}
 function histSlipHtml(h,byClient){
   const open=histIdEq(openHistId,h.id);
   const title=byClient?escH(h.date||''):escH(h.client||'');
@@ -3042,7 +3043,7 @@ function histSlipHtml(h,byClient){
   const corrSub=corrected?('　｜　訂正: '+escH(h.correctedAt)+(h.correctedBy?' ('+escH(h.correctedBy)+')':'')+(h.correctionCount>1?' ×'+h.correctionCount:'')):'';
   const deliv=escH(historyDeliveryDate(h)||h.deliveryDate||'');
   const sub=byClient?('納品: '+deliv+'　｜　'+(h.items||[]).length+'品目'+(h.issuedBy?'　｜　発行者: '+escH(h.issuedBy):'')+corrSub):('納品: '+deliv+'　｜　'+(h.items||[]).length+'品目'+(h.issuedBy?'　｜　発行者: '+escH(h.issuedBy):'')+corrSub);
-  const idLit=JSON.stringify(String(h.id));
+  const idLit=histIdLit(h.id);
   return `<div style="background:var(--w);border-bottom:0.5px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;background:${open?'var(--s)':'var(--w)'}" onclick="toggleHist(${idLit})"><label style="display:flex;align-items:center;flex-shrink:0;margin-right:4px;cursor:pointer" onclick="event.stopPropagation()"><input type="checkbox" ${histSelectedIds.has(String(h.id))?'checked':''} onchange="toggleHistSelect(${idLit},this.checked)" style="width:16px;height:16px;cursor:pointer" aria-label="印刷対象に選択"></label><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">${title}${corrBadge}</div><div style="font-size:11px;color:var(--mu);margin-top:2px">${sub}</div></div><div style="display:flex;align-items:center;gap:10px"><span style="background:var(--nv);color:#fff;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:600">合計 ${h.total}点</span><span style="font-size:14px;color:var(--mu);display:inline-block;transform:rotate(${open?'180':'0'}deg)">▼</span></div></div><div style="display:${open?'block':'none'};padding:14px 16px;background:var(--s);border-top:0.5px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div style="font-size:12px;color:var(--mu);line-height:1.8"><strong style="color:var(--tx);font-size:13px">${escH(h.client)}</strong><br>発行日: ${escH(h.date)}　｜　納品日: ${deliv}${h.issuedBy?'　｜　発行者: <strong style="color:var(--nv);">'+escH(h.issuedBy)+'</strong>':''}${corrected?'<br><span style="color:#854f0b;font-weight:600">訂正再発行: '+escH(h.correctedAt)+(h.correctedBy?'（'+escH(h.correctedBy)+'）':'')+(h.correctionCount>1?'　'+h.correctionCount+'回目':'')+'</span>':''}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn acc" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();startHistCorrect(${idLit})">訂正して再発行</button><button class="btn" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();dlHistCSV(${idLit})">CSV出力</button><button class="btn pri" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();printHist(${idLit})">伝票印刷</button><button class="btn ng" style="font-size:12px;padding:6px 12px" onclick="event.stopPropagation();delHist(${idLit})">削除</button></div></div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:left;font-weight:500;width:18%">品番</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:left;font-weight:500">品目名</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:right;font-weight:500;width:80px">数量</th></tr></thead><tbody>${(h.items||[]).map(it=>`<tr><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)"><span class="cbdg">${escH(it.code)}</span></td><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd)">${escH(it.name)}</td><td style="padding:7px 10px;border-bottom:0.5px solid var(--bd);text-align:right;font-weight:700">${it.qty}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="2" style="background:var(--w);padding:8px 10px;font-weight:700;border-top:2px solid var(--b2)">合計</td><td style="background:var(--w);padding:8px 10px;font-weight:700;text-align:right;border-top:2px solid var(--b2);font-size:15px;color:var(--nv)">${h.total}点</td></tr></tfoot></table></div></div>`;
 }
 function histFiltered(){const q=(document.getElementById('hist-search')?.value||'').trim().toLowerCase();if(!q)return DB.history||[];return (DB.history||[]).filter(h=>[h.client,h.date,h.deliveryDate,h.issuedBy,...((h.items||[]).flatMap(it=>[it.code,it.name]))].some(v=>String(v||'').toLowerCase().includes(q)));}
@@ -3059,7 +3060,7 @@ function deletedHistHtml(log){
   const s=log.slip||{};
   const deliv=escH(historyDeliveryDate(s)||s.deliveryDate||'');
   const reason=escH(histDeleteReasonLabel(log.reason));
-  const idLit=JSON.stringify(String(log.id));
+  const idLit=histIdLit(log.id);
   const restored=log.restoredAt?`<span style="margin-left:6px;color:#2e7d32;font-size:11px;font-weight:700">復元済 ${escH(formatDeletedAt(log.restoredAt))}</span>`:'';
   const items=(s.items||[]).filter(it=>Number(it.qty)>0).slice(0,6).map(it=>escH(it.name)+'×'+it.qty).join('、');
   const more=(s.items||[]).filter(it=>Number(it.qty)>0).length>6?'…':'';
@@ -3770,6 +3771,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-28',type:'fix',text:'発行履歴で伝票をクリックしても詳細が開かない不具合を修正'},
   {date:'2026-09-28',type:'feat',text:'請求額一覧に Excel 出力ボタンを追加（CSV の隣）'},
   {date:'2026-09-28',type:'fix',text:'伝票印刷の左側タイトルから「(納品控)」を外した（右側のみ残す）'},
   {date:'2026-09-21',type:'fix',text:'発行完了画面の「入力に戻る（発行取消）」を削除。印刷後に履歴が消えないようにした'},
