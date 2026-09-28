@@ -889,6 +889,10 @@ select.cs:focus{outline:none;border-color:var(--ac)}
           <div style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;font-weight:700;background:#e8f0fe;color:#185fa5">JSON</div>
           <div><div>全データバックアップ</div><div style="font-size:11px;color:var(--mu);margin-top:2px">緊急時の復元用・ローカル保存</div></div>
         </button>
+        <button type="button" onclick="recoverClientsFromHistory()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:0.5px solid var(--b2);border-radius:8px;cursor:pointer;background:var(--w);color:var(--tx);font-size:13px;font-weight:500;text-align:left">
+          <div style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;font-weight:700;background:#fce8e6;color:#a32d2d">復元</div>
+          <div><div>消えた客先を履歴から復元</div><div style="font-size:11px;color:var(--mu);margin-top:2px">発行履歴にあるのにマスタにない客先を戻す</div></div>
+        </button>
       </div>
     </div>
     <div style="background:var(--w);border:0.5px solid var(--b2);border-radius:10px;overflow:hidden">
@@ -995,6 +999,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="help-section-hd" onclick="toggleHelp('data')">😱 データが消えた・おかしいとき<span class="help-toggle" id="help-toggle-data">▶</span></div>
     <div class="help-section-body">
       <p><span class="help-tag">データ</span> タブ →「⬇️ 今すぐ読み込む」を押してください。クラウドから復元できる場合がほとんどです。</p>
+      <div class="help-step"><div class="help-step-num">客先</div><div class="help-step-body"><div class="help-step-title">客先がマスタから消えたとき</div><span class="help-tag">データ</span> → <span class="help-tag">消えた客先を履歴から復元</span>。発行履歴に残っている客先名をマスタへ戻せます（品目は履歴から拾います）。</div></div>
       <div class="help-warn">⚠️ それでも解決しない場合はJSONバックアップから復元してください。</div>
     </div>
   </div>
@@ -1211,7 +1216,7 @@ function persistDeletedHistoryLocal(){localStorage.setItem('purims_h_deleted',JS
 function load(){
   try{
     const saved=localStorage.getItem('purims_v14');
-    if(saved){const d=JSON.parse(saved);if(d.clients&&Object.keys(d.clients).length){DB.clients=d.clients;DB.cycles=d.cycles||{};DB.closing=d.closing||{};DB.minCharge=d.minCharge||{};DB.deliveryFee=d.deliveryFee||{};DB.packagingFee=d.packagingFee||{};DB.parkingEnabled=d.parkingEnabled||{};DB.slipCheckedThrough=d.slipCheckedThrough||'';DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing||{};DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing||{};DB.slipIssuedAckIds=d.slipIssuedAckIds||{};DB.products=d.products&&d.products.length?d.products:JSON.parse(JSON.stringify(INIT_PRODUCTS));DB.groups=d.groups&&d.groups.length?d.groups:JSON.parse(JSON.stringify(INIT_GROUPS));DB.clientGroups=d.clientGroups||JSON.parse(JSON.stringify(INIT_CLIENT_GROUPS));DB.clientOrder=d.clientOrder||{};loadLocalHistory();if(ensurePaperParkingFlags())persistDraft();return;}}
+    if(saved){const d=JSON.parse(saved);if(d.clients&&Object.keys(d.clients).length){DB.clients=unpackClientsFromFirebase(d.clients);DB.cycles=d.cycles||{};DB.closing=d.closing||{};DB.minCharge=d.minCharge||{};DB.deliveryFee=d.deliveryFee||{};DB.packagingFee=d.packagingFee||{};DB.parkingEnabled=d.parkingEnabled||{};DB.slipCheckedThrough=d.slipCheckedThrough||'';DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing||{};DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing||{};DB.slipIssuedAckIds=d.slipIssuedAckIds||{};DB.products=d.products&&d.products.length?d.products:JSON.parse(JSON.stringify(INIT_PRODUCTS));DB.groups=d.groups&&d.groups.length?d.groups:JSON.parse(JSON.stringify(INIT_GROUPS));DB.clientGroups=d.clientGroups||JSON.parse(JSON.stringify(INIT_CLIENT_GROUPS));DB.clientOrder=d.clientOrder||{};loadLocalHistory();if(ensurePaperParkingFlags())persistDraft();return;}}
   }catch(e){}
   DB.clients=JSON.parse(JSON.stringify(INIT_DATA.clients));DB.cycles=JSON.parse(JSON.stringify(INIT_DATA.cycles));DB.products=JSON.parse(JSON.stringify(INIT_PRODUCTS));DB.groups=JSON.parse(JSON.stringify(INIT_GROUPS));DB.clientGroups=JSON.parse(JSON.stringify(INIT_CLIENT_GROUPS));DB.history=[];
   loadLocalHistory();
@@ -2780,7 +2785,7 @@ function focusNextEnterField(from){
   return false;
 }
 function importCSV(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const lines=ev.target.result.replace(/\r/g,'').split('\n').filter(l=>l.trim());const nc={};const ncy={};lines.slice(1).forEach(line=>{const cols=line.split(',').map(c=>c.replace(/^"|"$/g,'').replace(/""/g,'"').trim());if(cols.length<3||!cols[0])return;const[client,code,name,cyc]=cols;if(!nc[client])nc[client]={items:[]};if(name)nc[client].items.push({code:code||'P000',name});if(cyc)ncy[client]=cyc;});if(!Object.keys(nc).length){toast('読み込めるデータがありませんでした','e');return;}if(!confirm(`${Object.keys(nc).length}件の客先データをインポートします。続けますか？`))return;Object.assign(DB.clients,nc);Object.assign(DB.cycles,ncy);persist();fillSel('csel');fillSel('msel');toast(`${Object.keys(nc).length}件をインポートしました`);}catch(err){toast('CSVの読み込みに失敗しました','e');}e.target.value='';};r.readAsText(file,'UTF-8');}
-function importJSON(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.clients){toast('フォーマットが違います','e');return;}if(!confirm('バックアップから全データを復元します。続けますか？'))return;DB.clients=d.clients;DB.cycles=d.cycles||{};if(d.products&&d.products.length)DB.products=d.products;if(d.groups&&d.groups.length)DB.groups=d.groups;if(d.clientGroups)DB.clientGroups=d.clientGroups;if(d.clientOrder)DB.clientOrder=d.clientOrder;if(d.closing)DB.closing=d.closing;if(d.minCharge)DB.minCharge=d.minCharge;if(d.deliveryFee)DB.deliveryFee=d.deliveryFee;if(d.packagingFee)DB.packagingFee=d.packagingFee;if(d.parkingEnabled)DB.parkingEnabled=d.parkingEnabled;if(d.slipCheckedThrough!=null)DB.slipCheckedThrough=d.slipCheckedThrough||'';if(d.slipCheckedThroughByClosing)DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing;if(d.slipCheckedAtByClosing)DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing;if(d.slipIssuedAckIds)DB.slipIssuedAckIds=d.slipIssuedAckIds;if(Array.isArray(d.history)){DB.history=d.history;persistHistoryLocal();if(currentUser){const obj={};DB.history.forEach(h=>{if(h&&h.id!=null)obj[String(h.id)]=h;});db.ref('purims/history').set(obj).catch(e=>toast('履歴の復元に失敗しました: '+e.message,'e'));}}if(Array.isArray(d.historyDeleted)){DB.historyDeleted=d.historyDeleted;persistDeletedHistoryLocal();if(currentUser){const obj={};DB.historyDeleted.forEach(h=>{if(h&&h.id!=null)obj[String(h.id)]=h;});db.ref('purims/historyDeleted').set(obj).catch(e=>toast('削除履歴の復元に失敗しました: '+e.message,'e'));}}persist();fillSel('csel');fillSel('msel');fillGrpSel('e-grp');fillGrpSel('nc-grp');renderProducts();renderHistory();renderGroups();renderClientGrpList();const pruned=pruneExpiredHistory({quiet:true});const skipped=markOutOfScopeAsBilled();updateBillingPendingBadge();const parts=[];if(pruned)parts.push(`保存期間超過 ${pruned}件削除`);if(skipped)parts.push(`7月以前 ${skipped}件を請求対象外`);toast(parts.length?`${Object.keys(DB.clients).length}件を復元しました（${parts.join('、')}）`:`${Object.keys(DB.clients).length}件を復元しました`);}catch(err){toast('JSONの読み込みに失敗しました','e');}e.target.value='';};r.readAsText(file,'UTF-8');}
+function importJSON(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.clients){toast('フォーマットが違います','e');return;}if(!confirm('バックアップから全データを復元します。続けますか？'))return;DB.clients=unpackClientsFromFirebase(d.clients);DB.cycles=d.cycles||{};if(d.products&&d.products.length)DB.products=d.products;if(d.groups&&d.groups.length)DB.groups=d.groups;if(d.clientGroups)DB.clientGroups=d.clientGroups;if(d.clientOrder)DB.clientOrder=d.clientOrder;if(d.closing)DB.closing=d.closing;if(d.minCharge)DB.minCharge=d.minCharge;if(d.deliveryFee)DB.deliveryFee=d.deliveryFee;if(d.packagingFee)DB.packagingFee=d.packagingFee;if(d.parkingEnabled)DB.parkingEnabled=d.parkingEnabled;if(d.slipCheckedThrough!=null)DB.slipCheckedThrough=d.slipCheckedThrough||'';if(d.slipCheckedThroughByClosing)DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing;if(d.slipCheckedAtByClosing)DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing;if(d.slipIssuedAckIds)DB.slipIssuedAckIds=d.slipIssuedAckIds;if(Array.isArray(d.history)){DB.history=d.history;persistHistoryLocal();if(currentUser){const obj={};DB.history.forEach(h=>{if(h&&h.id!=null)obj[String(h.id)]=h;});db.ref('purims/history').set(obj).catch(e=>toast('履歴の復元に失敗しました: '+e.message,'e'));}}if(Array.isArray(d.historyDeleted)){DB.historyDeleted=d.historyDeleted;persistDeletedHistoryLocal();if(currentUser){const obj={};DB.historyDeleted.forEach(h=>{if(h&&h.id!=null)obj[String(h.id)]=h;});db.ref('purims/historyDeleted').set(obj).catch(e=>toast('削除履歴の復元に失敗しました: '+e.message,'e'));}}persist();fillSel('csel');fillSel('msel');fillGrpSel('e-grp');fillGrpSel('nc-grp');renderProducts();renderHistory();renderGroups();renderClientGrpList();const pruned=pruneExpiredHistory({quiet:true});const skipped=markOutOfScopeAsBilled();updateBillingPendingBadge();const parts=[];if(pruned)parts.push(`保存期間超過 ${pruned}件削除`);if(skipped)parts.push(`7月以前 ${skipped}件を請求対象外`);toast(parts.length?`${Object.keys(DB.clients).length}件を復元しました（${parts.join('、')}）`:`${Object.keys(DB.clients).length}件を復元しました`);}catch(err){toast('JSONの読み込みに失敗しました','e');}e.target.value='';};r.readAsText(file,'UTF-8');}
 
 // ===== マスタ管理 =====
 function showPanel(id,btn){
@@ -3249,13 +3254,80 @@ function histDeletedPath(id){return 'purims/historyDeleted/'+String(id);}
 function sanitizeForFirebase(obj){
   return JSON.parse(JSON.stringify(obj,(k,v)=>v===undefined?undefined:v));
 }
+/** Firebase RTDB は空配列・空オブジェクトを保存しない → 品目0件の客先が消えるのを防ぐ */
+function packClientsForFirebase(clients){
+  const out={};
+  Object.keys(clients||{}).forEach(name=>{
+    const src=clients[name];
+    if(!src||typeof src!=='object')return;
+    const items=Array.isArray(src.items)?src.items.slice():[];
+    const rec={_keep:1,items:items.length?items:{__empty:true}};
+    Object.keys(src).forEach(k=>{
+      if(k==='items'||k==='_keep'||k==='__empty')return;
+      if(src[k]!==undefined)rec[k]=src[k];
+    });
+    out[name]=rec;
+  });
+  return out;
+}
+function unpackClientsFromFirebase(clients){
+  const out={};
+  Object.keys(clients||{}).forEach(name=>{
+    const src=clients[name];
+    if(!src||typeof src!=='object')return;
+    let items=src.items;
+    if(!items||items.__empty===true)items=[];
+    else if(!Array.isArray(items)){
+      items=Object.keys(items).filter(k=>/^\d+$/.test(k)).sort((a,b)=>Number(a)-Number(b)).map(k=>items[k]).filter(Boolean);
+    }
+    const rec={items};
+    Object.keys(src).forEach(k=>{
+      if(k==='items'||k==='_keep'||k==='__empty')return;
+      rec[k]=src[k];
+    });
+    out[name]=rec;
+  });
+  return out;
+}
+/** 発行履歴にあるがマスタにない客先を復元（誤消失の救済） */
+function recoverClientsFromHistory(){
+  const missing=[];
+  (DB.history||[]).forEach(h=>{
+    const n=h&&h.client;
+    if(!n||DB.clients[n])return;
+    if(!missing.includes(n))missing.push(n);
+  });
+  missing.sort((a,b)=>a.localeCompare(b,'ja'));
+  if(!missing.length){toast('復元できる客先はありません（履歴上の客先はすべてマスタにあります）');return;}
+  if(!confirm(missing.length+'件の客先が履歴にあるのにマスタにありません。復元しますか？\n\n'+missing.slice(0,15).join('\n')+(missing.length>15?'\n…':'')))return;
+  missing.forEach(name=>{
+    const recs=(DB.history||[]).filter(h=>h.client===name)
+      .slice().sort((a,b)=>(parseYMD(b.date||'')-parseYMD(a.date||''))||String(b.id).localeCompare(String(a.id)));
+    const seen=new Set();
+    const items=[];
+    recs.forEach(h=>{(h.items||[]).forEach(it=>{
+      const key=String(it.code||'')+'\0'+String(it.name||'');
+      if(seen.has(key))return;
+      seen.add(key);
+      const row={code:it.code||'P000',name:it.name||''};
+      const price=Number(it.price);
+      if(price>0)row.price=price;
+      items.push(row);
+    });});
+    DB.clients[name]={items};
+  });
+  persist();
+  fillSel('csel',curC);fillSel('msel',editC);
+  renderGroups();renderClientGrpList();
+  toast(missing.length+'件の客先を履歴から復元しました');
+}
 
 /** マスタのみ保存（履歴はID単位で別保存。全文.setはしない） */
 function fbSave(){
   if(!currentUser)return Promise.resolve();
   const tok=markSelfSaving();
   // undefined（例: 請求単価クリア）を残すと Firebase 全体が失敗するためサニタイズ
-  const master=sanitizeForFirebase({clients:DB.clients,cycles:DB.cycles,products:DB.products,groups:DB.groups,clientGroups:DB.clientGroups,clientOrder:DB.clientOrder||{},closing:DB.closing,minCharge:DB.minCharge||{},deliveryFee:DB.deliveryFee||{},packagingFee:DB.packagingFee||{},parkingEnabled:DB.parkingEnabled||{},slipCheckedThrough:DB.slipCheckedThrough||'',slipCheckedThroughByClosing:DB.slipCheckedThroughByClosing||{},slipCheckedAtByClosing:DB.slipCheckedAtByClosing||{},slipIssuedAckIds:DB.slipIssuedAckIds||{},savedAt:new Date().toISOString(),saveId:tok});
+  const master=sanitizeForFirebase({clients:packClientsForFirebase(DB.clients),cycles:DB.cycles,products:DB.products,groups:DB.groups,clientGroups:DB.clientGroups,clientOrder:DB.clientOrder||{},closing:DB.closing,minCharge:DB.minCharge||{},deliveryFee:DB.deliveryFee||{},packagingFee:DB.packagingFee||{},parkingEnabled:DB.parkingEnabled||{},slipCheckedThrough:DB.slipCheckedThrough||'',slipCheckedThroughByClosing:DB.slipCheckedThroughByClosing||{},slipCheckedAtByClosing:DB.slipCheckedAtByClosing||{},slipIssuedAckIds:DB.slipIssuedAckIds||{},savedAt:new Date().toISOString(),saveId:tok});
   return db.ref('purims/data').transaction(current=>{
     if(current&&current.savedAt&&_lastAppliedSavedAt&&current.savedAt!==_lastAppliedSavedAt){
       return; // 他PCが先に更新 → abort
@@ -3364,7 +3436,7 @@ function migrateHistoryIfNeeded(raw){
 
 function fbApplyData(d,history,historyDeleted){
   if(!d||!d.clients)return;
-  DB.clients=d.clients;DB.cycles=d.cycles||{};
+  DB.clients=unpackClientsFromFirebase(d.clients);DB.cycles=d.cycles||{};
   DB.products=d.products&&d.products.length?d.products:DB.products;
   DB.groups=d.groups&&d.groups.length?d.groups:DB.groups;
   DB.clientGroups=d.clientGroups||{};
@@ -3420,7 +3492,7 @@ function fbStartListeners(){
   const onData=refData.on("value",snap=>{
     if(skipData||_isSelfSaving)return;
     const d=snap.val();if(!d||!d.clients)return;
-    DB.clients=d.clients;DB.cycles=d.cycles||{};
+    DB.clients=unpackClientsFromFirebase(d.clients);DB.cycles=d.cycles||{};
     DB.products=d.products&&d.products.length?d.products:DB.products;
     DB.groups=d.groups&&d.groups.length?d.groups:DB.groups;
     DB.clientGroups=d.clientGroups||{};DB.clientOrder=d.clientOrder||{};DB.closing=d.closing||{};DB.minCharge=d.minCharge||{};DB.deliveryFee=d.deliveryFee||{};DB.packagingFee=d.packagingFee||{};DB.parkingEnabled=d.parkingEnabled||{};DB.slipCheckedThrough=d.slipCheckedThrough||'';DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing||{};DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing||{};DB.slipIssuedAckIds=d.slipIssuedAckIds||{};
@@ -3771,6 +3843,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-09-28',type:'fix',text:'品目0件の客先がクラウド保存で消える不具合を修正。履歴からの復元ボタンも追加'},
   {date:'2026-09-28',type:'fix',text:'発行履歴で伝票をクリックしても詳細が開かない不具合を修正'},
   {date:'2026-09-28',type:'feat',text:'請求額一覧に Excel 出力ボタンを追加（CSV の隣）'},
   {date:'2026-09-28',type:'fix',text:'伝票印刷の左側タイトルから「(納品控)」を外した（右側のみ残す）'},
