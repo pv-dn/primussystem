@@ -244,10 +244,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 .add-item-tab.on{color:var(--nv);background:var(--w);border-bottom-color:var(--ac)}
 .add-item-panel{display:none;padding:10px 12px;gap:8px;align-items:center;flex-wrap:wrap}
 .add-item-panel.on{display:flex}
-.master-pick-initials{display:flex;flex-wrap:wrap;gap:4px;width:100%;margin-top:2px}
-.master-pick-initials button{padding:3px 8px;border-radius:4px;border:1px solid var(--b2);background:var(--w);color:var(--mu);font-size:11px;font-weight:600;cursor:pointer;line-height:1.3}
-.master-pick-initials button.on{background:var(--nv);color:#fff;border-color:var(--nv)}
-.master-pick-initials button:disabled{opacity:.35;cursor:default}
+.master-pick-initial-sel{padding:5px 8px;border:1px solid var(--b2);border-radius:5px;font-size:12px;background:var(--w);color:var(--tx);min-width:88px}
 .add-item-sel{flex:1;min-width:160px;padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:13px;background:var(--w);color:var(--tx);cursor:pointer}
 .add-item-inp{flex:1;min-width:160px;padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:13px;background:var(--w);color:var(--tx)}
 .add-item-hint{font-size:11px;color:var(--mu);width:100%;padding:0 2px;margin-top:-4px}
@@ -621,17 +618,16 @@ select.cs:focus{outline:none;border-color:var(--ac)}
             <button class="add-item-tab on" onclick="switchAddTab('master',this)">📋 マスタから追加</button>
             <button class="add-item-tab" onclick="switchAddTab('free',this)">📝 自由入力で追加</button>
           </div>
-          <div id="add-panel-master" class="add-item-panel on" style="flex-direction:column;align-items:stretch">
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
-              <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
-              <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
-              <select class="add-item-sel" id="master-add-sel"><option value="">— 商品を選択 —</option></select>
-              <input type="number" class="qty" data-enter-col="qty" style="width:70px" id="master-add-qty" min="1" value="1">
-              <input type="text" class="enter-skip" style="padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:12px;background:var(--w);color:var(--tx);width:130px" id="master-add-biko" placeholder="備考（任意）">
-              <button class="btn pri" style="padding:7px 14px;font-size:13px;white-space:nowrap" onclick="addFromMaster()">追加</button>
-            </div>
-            <div class="master-pick-initials" id="master-add-initials" aria-label="頭文字で絞り込み"></div>
+          <div id="add-panel-master" class="add-item-panel on">
+            <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
+            <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
+            <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
+            <span style="font-size:11px;color:var(--mu);white-space:nowrap">頭文字</span>
+            <select class="master-pick-initial-sel" id="master-add-initials" aria-label="頭文字で絞り込み" onchange="setMasterPickInitial(this.value)"></select>
+            <select class="add-item-sel" id="master-add-sel"><option value="">— 商品を選択 —</option></select>
+            <input type="number" class="qty" data-enter-col="qty" style="width:70px" id="master-add-qty" min="1" value="1">
+            <input type="text" class="enter-skip" style="padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:12px;background:var(--w);color:var(--tx);width:130px" id="master-add-biko" placeholder="備考（任意）">
+            <button class="btn pri" style="padding:7px 14px;font-size:13px;white-space:nowrap" onclick="addFromMaster()">追加</button>
           </div>
           <div id="add-panel-free" class="add-item-panel">
             <input type="text" class="add-item-inp" id="free-add-name" placeholder="品名を入力" oninput="onFreeNameInput(this)">
@@ -723,15 +719,14 @@ select.cs:focus{outline:none;border-color:var(--ac)}
             <button id="add-tab-master" onclick="switchAddTab2('master')" style="flex:1;padding:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--nv);color:#fff">📋 マスタから選ぶ</button>
             <button id="add-tab-free" onclick="switchAddTab2('free')" style="flex:1;padding:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--s);color:var(--mu)">✏️ 自由入力</button>
           </div>
-          <div id="add-area-master" style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--s);border-bottom:0.5px solid var(--bd)">
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
-              <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
-              <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
-              <select id="ni-master-sel" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);flex:1;min-width:180px"><option value="">— 品目を選択 —</option></select>
-              <button style="padding:7px 14px;border-radius:5px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--ok);color:#fff" onclick="addItemFromMaster()">＋ 追加</button>
-            </div>
-            <div class="master-pick-initials" id="ni-master-initials" aria-label="頭文字で絞り込み"></div>
+          <div id="add-area-master" style="display:flex;gap:8px;padding:10px 12px;background:var(--s);border-bottom:0.5px solid var(--bd);flex-wrap:wrap;align-items:center">
+            <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
+            <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
+            <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
+            <span style="font-size:11px;color:var(--mu);white-space:nowrap">頭文字</span>
+            <select class="master-pick-initial-sel" id="ni-master-initials" aria-label="頭文字で絞り込み" onchange="setMasterPickInitial(this.value)"></select>
+            <select id="ni-master-sel" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);flex:1;min-width:180px"><option value="">— 品目を選択 —</option></select>
+            <button style="padding:7px 14px;border-radius:5px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--ok);color:#fff" onclick="addItemFromMaster()">＋ 追加</button>
           </div>
           <div id="add-area-free" style="display:none;gap:8px;padding:10px 12px;background:var(--s);border-bottom:0.5px solid var(--bd);flex-wrap:wrap;align-items:center">
             <input class="enter-skip" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--mu);width:110px;flex-shrink:0;font-family:monospace" id="ni-code" placeholder="P001 (自動)">
@@ -826,9 +821,10 @@ select.cs:focus{outline:none;border-color:var(--ac)}
           <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
           <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
           <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
+          <span style="font-size:11px;color:var(--mu);white-space:nowrap">頭文字</span>
+          <select class="master-pick-initial-sel" id="prod-list-initials" aria-label="頭文字で絞り込み" onchange="setMasterPickInitial(this.value)"></select>
           <input class="search-box" type="text" id="prod-search" placeholder="品番または品目名で検索..." oninput="renderProducts()" style="margin:0;flex:1;min-width:160px">
         </div>
-        <div class="master-pick-initials" id="prod-list-initials" aria-label="頭文字で絞り込み" style="margin-bottom:8px"></div>
         <div style="max-height:480px;overflow-y:auto;border:0.5px solid var(--b2);border-radius:6px">
           <table class="ptbl"><thead><tr><th style="width:110px">品番</th><th>品目名</th><th style="width:80px;text-align:center">操作</th></tr></thead><tbody id="prod-tbody"></tbody></table>
         </div>
@@ -993,7 +989,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <p><span class="help-tag">マスタ管理</span> → 客先編集 で、客先ごとに次を設定します。</p>
       <div class="help-step"><div class="help-step-num">1</div><div class="help-step-body"><div class="help-step-title">締め日</div>20日〆・25日〆・末日〆から選択。請求月の判定に使います（客先ごとに異なってOK）。</div></div>
       <div class="help-step"><div class="help-step-num">2</div><div class="help-step-body"><div class="help-step-title">請求単価</div>各品目の「請求単価」列にまとめて入力（<strong>Enter</strong> で次の単価へ縦移動。品番はクリック時のみ） → 下の <span class="help-tag">請求単価・品目を保存</span> を1回押す。1件ごとに保存する必要はありません。<strong>伝票には表示されません。</strong> 請求明細の画面表示・印刷・Excel に使います。</div></div>
-      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">品目・納品サイクル</div>品目名と納品曜日（月〜日）を客先ごとに登録。<span class="help-tag">マスタから選ぶ</span>・伝票の <span class="help-tag">マスタから追加</span>・商品コード一覧では、<span class="help-tag">品番順</span>／<span class="help-tag">あいうえお順</span> の切り替えと、<span class="help-tag">あ・か・さ…／A・B・C…</span> の頭文字絞り込みが使えます。</div></div>
+      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">品目・納品サイクル</div>品目名と納品曜日（月〜日）を客先ごとに登録。<span class="help-tag">マスタから選ぶ</span>・伝票の <span class="help-tag">マスタから追加</span>・商品コード一覧では、<span class="help-tag">品番順</span>／<span class="help-tag">あいうえお順</span> と、<span class="help-tag">頭文字</span> プルダウン（あ・か・さ…／A・B・C…）で絞り込めます。</div></div>
       <div class="help-step"><div class="help-step-num">4</div><div class="help-step-body"><div class="help-step-title">最低保証（必要な客先のみ）</div>月額の税抜最低保証円を入力。請求明細の小計がこれを下回るときは、保証額で請求します（消費税はその上に10%）。空欄は保証なし。</div></div>
       <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">配送費（必要な客先のみ）</div>1回あたりの税抜配送費を入力。請求明細書では<strong>伝票1枚につき1回</strong>「配送費」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
       <div class="help-step"><div class="help-step-num">6</div><div class="help-step-body"><div class="help-step-title">包装料（必要な客先のみ）</div>1点あたりの税抜包装料を入力。請求明細書では<strong>その納品の総点数×単価</strong>で「包装料」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
@@ -1351,7 +1347,7 @@ function setMasterPickSort(mode){
   refreshMasterPickViews();
 }
 function setMasterPickInitial(key){
-  masterPickInitial=key===masterPickInitial?'':(key||'');
+  masterPickInitial=key||'';
   try{localStorage.setItem('purims_master_pick_initial',masterPickInitial);}catch(e){}
   refreshMasterPickViews();
 }
@@ -1370,25 +1366,25 @@ function syncMasterPickSortUi(){
     btn.style.borderColor=on?'var(--nv)':'var(--b2)';
   });
 }
-function masterPickInitialButtonsHtml(available){
+function masterPickInitialOptions(available){
   const avail=available||new Set();
-  const chips=[{key:'',label:'すべて'}]
+  return [{key:'',label:'すべて'}]
     .concat(MASTER_PICK_KANA_ROWS.map(r=>({key:r.key,label:r.label})))
     .concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(L=>({key:L,label:L})))
-    .concat([{key:'0',label:'0-9'},{key:'#',label:'他'}]);
-  return chips.map(c=>{
-    const on=masterPickInitial===c.key;
-    const has=c.key===''||avail.has(c.key);
-    return`<button type="button" ${has?'':'disabled'} class="${on?'on':''}" onclick="setMasterPickInitial('${c.key}')">${c.label}</button>`;
-  }).join('');
+    .concat([{key:'0',label:'0-9'},{key:'#',label:'他'}])
+    .filter(c=>c.key===''||avail.has(c.key));
 }
 function renderMasterPickInitials(){
   const all=(DB.products||[]).filter(p=>p&&p.code!=null);
   const avail=new Set(all.map(p=>productNameInitialKey(p.name)));
-  const html=masterPickInitialButtonsHtml(avail);
+  if(masterPickInitial&&!avail.has(masterPickInitial))masterPickInitial='';
+  const opts=masterPickInitialOptions(avail);
   ['master-add-initials','ni-master-initials','prod-list-initials'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el)el.innerHTML=html;
+    if(!el)return;
+    const cur=masterPickInitial;
+    el.innerHTML=opts.map(c=>`<option value="${escH(c.key)}"${c.key===cur?' selected':''}>${escH(c.label)}</option>`).join('');
+    el.value=cur;
   });
 }
 function addFromMaster(){const sel=document.getElementById('master-add-sel');const qty=parseInt(document.getElementById('master-add-qty').value)||0;const biko=document.getElementById('master-add-biko').value.trim();if(!sel.value){toast('商品を選択してください','e');return;}if(qty<=0){toast('数量を1以上にしてください','e');return;}const prod=DB.products.find(p=>p.code===sel.value);if(!prod)return;extraItems.push({code:prod.code,name:prod.name,qty,biko});sel.value='';document.getElementById('master-add-qty').value=1;document.getElementById('master-add-biko').value='';renderItems();toast('「'+prod.name+'」を追加しました');}
@@ -3991,6 +3987,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-10-17',type:'fix',text:'品目の頭文字絞り込みをボタン列からプルダウンに変更（場所を取らない）'},
   {date:'2026-10-17',type:'feat',text:'品目選択に頭文字絞り込み（あ・か・さ…／A・B・C）を追加。品番順・あいうえお順と併用可'},
   {date:'2026-10-04',type:'fix',text:'伝票印刷の長い客先名は1行のまま、小さくし過ぎず字間で調整するようにした'},
   {date:'2026-09-28',type:'feat',text:'マスタから品目を選ぶとき、品番順／あいうえお順を切り替えられるようにした'},
