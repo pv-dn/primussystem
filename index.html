@@ -813,7 +813,8 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="card"><div class="ch">商品コード一覧 <span id="prod-count" style="font-size:11px;opacity:.7;margin-left:4px"></span><div style="margin-left:auto;font-size:11px;opacity:.7">品番・品目名をクリックして直接編集</div></div>
       <div style="display:flex;gap:8px;padding:10px 14px;background:var(--s);border-bottom:0.5px solid var(--bd);flex-wrap:wrap;align-items:center">
         <input class="enter-skip" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);width:110px;flex-shrink:0;font-family:monospace" id="np-code" placeholder="品番（自動）">
-        <input style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);flex:1;min-width:160px" id="np-name" placeholder="新しい品目名を入力">
+        <input style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);flex:1;min-width:140px" id="np-name" placeholder="新しい品目名を入力">
+        <input class="enter-skip" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);width:120px;flex-shrink:0" id="np-yomi" placeholder="読み（任意）" title="頭文字絞り込み用。例: わぼうし">
         <button style="padding:7px 14px;border-radius:5px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--ok);color:#fff" onclick="addProduct()">＋ 商品を追加</button>
       </div>
       <div class="cb">
@@ -826,7 +827,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
           <input class="search-box" type="text" id="prod-search" placeholder="品番または品目名で検索..." oninput="renderProducts()" style="margin:0;flex:1;min-width:160px">
         </div>
         <div style="max-height:480px;overflow-y:auto;border:0.5px solid var(--b2);border-radius:6px">
-          <table class="ptbl"><thead><tr><th style="width:110px">品番</th><th>品目名</th><th style="width:80px;text-align:center">操作</th></tr></thead><tbody id="prod-tbody"></tbody></table>
+          <table class="ptbl"><thead><tr><th style="width:100px">品番</th><th>品目名</th><th style="width:110px">読み</th><th style="width:72px;text-align:center">操作</th></tr></thead><tbody id="prod-tbody"></tbody></table>
         </div>
       </div>
     </div>
@@ -989,7 +990,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <p><span class="help-tag">マスタ管理</span> → 客先編集 で、客先ごとに次を設定します。</p>
       <div class="help-step"><div class="help-step-num">1</div><div class="help-step-body"><div class="help-step-title">締め日</div>20日〆・25日〆・末日〆から選択。請求月の判定に使います（客先ごとに異なってOK）。</div></div>
       <div class="help-step"><div class="help-step-num">2</div><div class="help-step-body"><div class="help-step-title">請求単価</div>各品目の「請求単価」列にまとめて入力（<strong>Enter</strong> で次の単価へ縦移動。品番はクリック時のみ） → 下の <span class="help-tag">請求単価・品目を保存</span> を1回押す。1件ごとに保存する必要はありません。<strong>伝票には表示されません。</strong> 請求明細の画面表示・印刷・Excel に使います。</div></div>
-      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">品目・納品サイクル</div>品目名と納品曜日（月〜日）を客先ごとに登録。<span class="help-tag">マスタから選ぶ</span>・伝票の <span class="help-tag">マスタから追加</span>・商品コード一覧では、<span class="help-tag">品番順</span>／<span class="help-tag">あいうえお順</span> と、<span class="help-tag">頭文字</span> プルダウン（あ・か・さ…／A・B・C…）で絞り込めます。</div></div>
+      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">品目・納品サイクル</div>品目名と納品曜日（月〜日）を客先ごとに登録。<span class="help-tag">マスタから選ぶ</span>・伝票の <span class="help-tag">マスタから追加</span>・商品コード一覧では、<span class="help-tag">品番順</span>／<span class="help-tag">あいうえお順</span> と、<span class="help-tag">頭文字</span> プルダウン（あ・か・さ…／A・B・C…）で絞り込めます。漢字の品目も読みで判定します（例: 和帽子→<strong>わ</strong>、白衣→は）。一覧に無い読みのときは、商品コード一覧の<strong>読み</strong>欄（任意）にひらがな等を入れるとその頭文字で出ます。</div></div>
       <div class="help-step"><div class="help-step-num">4</div><div class="help-step-body"><div class="help-step-title">最低保証（必要な客先のみ）</div>月額の税抜最低保証円を入力。請求明細の小計がこれを下回るときは、保証額で請求します（消費税はその上に10%）。空欄は保証なし。</div></div>
       <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">配送費（必要な客先のみ）</div>1回あたりの税抜配送費を入力。請求明細書では<strong>伝票1枚につき1回</strong>「配送費」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
       <div class="help-step"><div class="help-step-num">6</div><div class="help-step-body"><div class="help-step-title">包装料（必要な客先のみ）</div>1点あたりの税抜包装料を入力。請求明細書では<strong>その納品の総点数×単価</strong>で「包装料」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
@@ -1316,8 +1317,30 @@ function toFullKatakanaChar(ch){
   if(hi>=0)return MASTER_PICK_FW_KANA[hi];
   return c;
 }
-function productNameInitialKey(name){
-  const s=String(name||'').trim();
+/** 品名の読みヒント（長い順）。値は頭文字行キー（アカサ…）。例: 和帽子→ワ（わ） */
+const PRODUCT_NAME_YOMI_HINTS=[
+  ['半白衣','ハ'],['白衣ズボン','ハ'],['白衣','ハ'],['白パンツ','サ'],['白石目','サ'],['カバー　白','カ'],['クロス白','カ'],['ピロケース白','ハ'],
+  ['黒パンツ','カ'],['和帽子','ワ'],['作務衣','サ'],['座布団カバー','サ'],['座布団','サ'],['足袋','タ'],['着物','カ'],
+  ['椅子カバー','ア'],['診察衣','サ'],['千鳥ズボン','タ'],['三角巾','サ'],['胸当てエプロン','マ'],['胸当て','マ'],
+  ['前掛け　色','マ'],['調理前掛け','タ'],['酒屋前掛け','サ'],['前掛け','マ'],['鯉口シャツ','カ'],['調理コート','タ'],['調理シャツ','タ'],
+  ['七分袖白衣','ナ'],['手ぬぐい','タ'],['帽子','ハ'],['帯','ア'],['ハッピ','ハ'],['のれん','ナ'],['おしぼり','ア'],
+  ['青線','ア'],['赤格子','ア'],['タオル　小','タ'],['短パン','タ'],['ダボシャツ','タ'],['デニムパンツ','タ'],['デニムサロン','タ']
+];
+/** 先頭1文字の漢字→頭文字行（ヒントに無いとき）。値は行キー */
+const KANJI_INITIAL_ROW={
+  '和':'ワ','白':'ハ','黒':'カ','赤':'ア','青':'ア','緑':'マ','紺':'カ','茶':'タ','黄':'カ',
+  '七':'ナ','三':'サ','半':'ハ','千':'タ','大':'タ','小':'カ','中':'タ',
+  '調':'タ','診':'サ','鯉':'カ','酒':'サ','鮨':'サ','寿':'サ',
+  '胸':'マ','前':'マ','上':'ア','下':'サ','帽':'ハ','帯':'ア','着':'カ','衣':'ア',
+  '作':'サ','座':'サ','椅':'ア','手':'タ','足':'タ','袖':'サ','襟':'ア','紐':'ハ',
+  '掛':'カ','敷':'サ','枕':'マ','色':'ア','縞':'サ','石':'ア','湯':'ヤ','浴':'ヤ','短':'タ','長':'タ'
+};
+function isCjkChar(ch){
+  const c=String(ch||'').charCodeAt(0);
+  return(c>=0x4E00&&c<=0x9FFF)||(c>=0x3400&&c<=0x4DBF)||(c>=0xF900&&c<=0xFAFF);
+}
+function kanaTextInitialKey(text){
+  const s=String(text||'').trim();
   if(!s)return'#';
   let ch=toFullKatakanaChar(s[0]);
   for(const row of MASTER_PICK_KANA_ROWS){if(row.chars.includes(ch))return row.key;}
@@ -1326,11 +1349,37 @@ function productNameInitialKey(name){
   if(/[0-9０-９]/.test(ch))return'0';
   return'#';
 }
+/** シ・ムなども含め、頭文字行キー（アカサ…）に揃える */
+function toInitialRowKey(k){
+  const s=String(k||'').trim();
+  if(!s)return'#';
+  if(MASTER_PICK_KANA_ROWS.some(r=>r.key===s))return s;
+  return kanaTextInitialKey(s);
+}
+function productNameInitialKey(name,yomi){
+  const reading=String(yomi||'').trim();
+  if(reading)return kanaTextInitialKey(reading);
+  const s=String(name||'').trim();
+  if(!s)return'#';
+  for(const[prefix,row] of PRODUCT_NAME_YOMI_HINTS){
+    if(s.startsWith(prefix))return toInitialRowKey(row);
+  }
+  const ch=s[0];
+  if(isCjkChar(ch)){
+    const row=KANJI_INITIAL_ROW[ch];
+    if(row)return toInitialRowKey(row);
+  }
+  return kanaTextInitialKey(s);
+}
+function productInitialKey(p){
+  if(!p)return'#';
+  return productNameInitialKey(p.name,p.yomi);
+}
 function sortedProductsForPick(excludeCodes){
   const ex=new Set(excludeCodes||[]);
   let list=(DB.products||[]).filter(p=>p&&p.code!=null&&!ex.has(p.code));
   if(masterPickInitial){
-    list=list.filter(p=>productNameInitialKey(p.name)===masterPickInitial);
+    list=list.filter(p=>productInitialKey(p)===masterPickInitial);
   }
   if(masterPickSort==='name'){
     list=list.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ja')||String(a.code||'').localeCompare(String(b.code||''),'ja'));
@@ -1376,7 +1425,7 @@ function masterPickInitialOptions(available){
 }
 function renderMasterPickInitials(){
   const all=(DB.products||[]).filter(p=>p&&p.code!=null);
-  const avail=new Set(all.map(p=>productNameInitialKey(p.name)));
+  const avail=new Set(all.map(p=>productInitialKey(p)));
   if(masterPickInitial&&!avail.has(masterPickInitial))masterPickInitial='';
   const opts=masterPickInitialOptions(avail);
   ['master-add-initials','ni-master-initials','prod-list-initials'].forEach(id=>{
@@ -3055,15 +3104,32 @@ function renderProducts(){
   document.getElementById('prod-count').textContent=`全${DB.products.length}件 / 表示${filtered.length}件`;
   document.getElementById('prod-tbody').innerHTML=filtered.map(p=>{
     const ri=DB.products.findIndex(x=>x.code===p.code&&x.name===p.name);
-    return`<tr><td><input class="ei enter-skip" value="${escH(p.code)}" onblur="updProd(${ri},'code',this.value)" style="font-family:monospace;width:90px"></td><td><input class="ei" value="${escH(p.name)}" onblur="updProd(${ri},'name',this.value)"></td><td style="text-align:center"><button class="bdel" onclick="delProd(${ri})">削除</button></td></tr>`;
-  }).join('')||'<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--mu)">該当なし</td></tr>';
+    return`<tr><td><input class="ei enter-skip" value="${escH(p.code)}" onblur="updProd(${ri},'code',this.value)" style="font-family:monospace;width:90px"></td><td><input class="ei" value="${escH(p.name)}" onblur="updProd(${ri},'name',this.value)"></td><td><input class="ei enter-skip" value="${escH(p.yomi||'')}" placeholder="任意" onblur="updProd(${ri},'yomi',this.value)" title="頭文字用の読み（例: わぼうし）"></td><td style="text-align:center"><button class="bdel" onclick="delProd(${ri})">削除</button></td></tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--mu)">該当なし</td></tr>';
   syncMasterPickSortUi();
   renderMasterPickInitials();
 }
-function updProd(i,f,v){if(DB.products[i])DB.products[i][f]=v.trim();persistLocal();}
+function updProd(i,f,v){
+  if(!DB.products[i])return;
+  const t=String(v||'').trim();
+  if(f==='yomi'){if(t)DB.products[i].yomi=t;else delete DB.products[i].yomi;}
+  else DB.products[i][f]=t;
+  persistLocal();
+  if(f==='yomi'||f==='name')renderMasterPickInitials();
+}
 function delProd(i){if(!confirm(`「${DB.products[i]?.code} ${DB.products[i]?.name}」を削除しますか？`))return;DB.products.splice(i,1);persist();renderProducts();setNPCode();toast('削除しました');}
 function setNPCode(){document.getElementById('np-code').placeholder=nextPCode()+' (自動)';document.getElementById('np-code').value='';}
-function addProduct(){const code=document.getElementById('np-code').value.trim()||nextPCode();const name=document.getElementById('np-name').value.trim();if(!name){toast('品目名を入力してください','e');return;}if(DB.products.find(p=>p.code===code)){toast(`品番 ${code} は既に存在します`,'e');return;}DB.products.push({code,name});document.getElementById('np-name').value='';persist();renderProducts();setNPCode();toast(`「${name}」（${code}）を追加しました`);}
+function addProduct(){
+  const code=document.getElementById('np-code').value.trim()||nextPCode();
+  const name=document.getElementById('np-name').value.trim();
+  const yomi=document.getElementById('np-yomi')?.value.trim()||'';
+  if(!name){toast('品目名を入力してください','e');return;}
+  if(DB.products.find(p=>p.code===code)){toast(`品番 ${code} は既に存在します`,'e');return;}
+  DB.products.push({code,name,...(yomi?{yomi}:{})});
+  document.getElementById('np-name').value='';
+  const yEl=document.getElementById('np-yomi');if(yEl)yEl.value='';
+  persist();renderProducts();setNPCode();toast(`「${name}」（${code}）を追加しました`);
+}
 
 // ===== 発行履歴 =====
 let histFolderCollapsed={};
@@ -3987,6 +4053,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-10-17',type:'feat',text:'漢字品目も読みで頭文字検索（例: 和帽子→わ）。読み欄（任意）で上書き可'},
   {date:'2026-10-17',type:'fix',text:'品目の頭文字絞り込みをボタン列からプルダウンに変更（場所を取らない）'},
   {date:'2026-10-17',type:'feat',text:'品目選択に頭文字絞り込み（あ・か・さ…／A・B・C）を追加。品番順・あいうえお順と併用可'},
   {date:'2026-10-04',type:'fix',text:'伝票印刷の長い客先名は1行のまま、小さくし過ぎず字間で調整するようにした'},
