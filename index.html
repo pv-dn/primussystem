@@ -244,6 +244,10 @@ select.cs:focus{outline:none;border-color:var(--ac)}
 .add-item-tab.on{color:var(--nv);background:var(--w);border-bottom-color:var(--ac)}
 .add-item-panel{display:none;padding:10px 12px;gap:8px;align-items:center;flex-wrap:wrap}
 .add-item-panel.on{display:flex}
+.master-pick-initials{display:flex;flex-wrap:wrap;gap:4px;width:100%;margin-top:2px}
+.master-pick-initials button{padding:3px 8px;border-radius:4px;border:1px solid var(--b2);background:var(--w);color:var(--mu);font-size:11px;font-weight:600;cursor:pointer;line-height:1.3}
+.master-pick-initials button.on{background:var(--nv);color:#fff;border-color:var(--nv)}
+.master-pick-initials button:disabled{opacity:.35;cursor:default}
 .add-item-sel{flex:1;min-width:160px;padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:13px;background:var(--w);color:var(--tx);cursor:pointer}
 .add-item-inp{flex:1;min-width:160px;padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:13px;background:var(--w);color:var(--tx)}
 .add-item-hint{font-size:11px;color:var(--mu);width:100%;padding:0 2px;margin-top:-4px}
@@ -617,14 +621,17 @@ select.cs:focus{outline:none;border-color:var(--ac)}
             <button class="add-item-tab on" onclick="switchAddTab('master',this)">📋 マスタから追加</button>
             <button class="add-item-tab" onclick="switchAddTab('free',this)">📝 自由入力で追加</button>
           </div>
-          <div id="add-panel-master" class="add-item-panel on">
-            <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
-            <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
-            <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
-            <select class="add-item-sel" id="master-add-sel"><option value="">— 商品を選択 —</option></select>
-            <input type="number" class="qty" data-enter-col="qty" style="width:70px" id="master-add-qty" min="1" value="1">
-            <input type="text" class="enter-skip" style="padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:12px;background:var(--w);color:var(--tx);width:130px" id="master-add-biko" placeholder="備考（任意）">
-            <button class="btn pri" style="padding:7px 14px;font-size:13px;white-space:nowrap" onclick="addFromMaster()">追加</button>
+          <div id="add-panel-master" class="add-item-panel on" style="flex-direction:column;align-items:stretch">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
+              <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
+              <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
+              <select class="add-item-sel" id="master-add-sel"><option value="">— 商品を選択 —</option></select>
+              <input type="number" class="qty" data-enter-col="qty" style="width:70px" id="master-add-qty" min="1" value="1">
+              <input type="text" class="enter-skip" style="padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:12px;background:var(--w);color:var(--tx);width:130px" id="master-add-biko" placeholder="備考（任意）">
+              <button class="btn pri" style="padding:7px 14px;font-size:13px;white-space:nowrap" onclick="addFromMaster()">追加</button>
+            </div>
+            <div class="master-pick-initials" id="master-add-initials" aria-label="頭文字で絞り込み"></div>
           </div>
           <div id="add-panel-free" class="add-item-panel">
             <input type="text" class="add-item-inp" id="free-add-name" placeholder="品名を入力" oninput="onFreeNameInput(this)">
@@ -716,12 +723,15 @@ select.cs:focus{outline:none;border-color:var(--ac)}
             <button id="add-tab-master" onclick="switchAddTab2('master')" style="flex:1;padding:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--nv);color:#fff">📋 マスタから選ぶ</button>
             <button id="add-tab-free" onclick="switchAddTab2('free')" style="flex:1;padding:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--s);color:var(--mu)">✏️ 自由入力</button>
           </div>
-          <div id="add-area-master" style="display:flex;gap:8px;padding:10px 12px;background:var(--s);border-bottom:0.5px solid var(--bd);flex-wrap:wrap;align-items:center">
-            <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
-            <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
-            <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
-            <select id="ni-master-sel" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);flex:1;min-width:180px"><option value="">— 品目を選択 —</option></select>
-            <button style="padding:7px 14px;border-radius:5px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--ok);color:#fff" onclick="addItemFromMaster()">＋ 追加</button>
+          <div id="add-area-master" style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--s);border-bottom:0.5px solid var(--bd)">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
+              <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
+              <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
+              <select id="ni-master-sel" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--tx);flex:1;min-width:180px"><option value="">— 品目を選択 —</option></select>
+              <button style="padding:7px 14px;border-radius:5px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--ok);color:#fff" onclick="addItemFromMaster()">＋ 追加</button>
+            </div>
+            <div class="master-pick-initials" id="ni-master-initials" aria-label="頭文字で絞り込み"></div>
           </div>
           <div id="add-area-free" style="display:none;gap:8px;padding:10px 12px;background:var(--s);border-bottom:0.5px solid var(--bd);flex-wrap:wrap;align-items:center">
             <input class="enter-skip" style="padding:7px 10px;border:1px solid var(--b2);border-radius:5px;font-size:13px;background:var(--w);color:var(--mu);width:110px;flex-shrink:0;font-family:monospace" id="ni-code" placeholder="P001 (自動)">
@@ -812,7 +822,13 @@ select.cs:focus{outline:none;border-color:var(--ac)}
         <button style="padding:7px 14px;border-radius:5px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:var(--ok);color:#fff" onclick="addProduct()">＋ 商品を追加</button>
       </div>
       <div class="cb">
-        <input class="search-box" type="text" id="prod-search" placeholder="品番または品目名で検索..." oninput="renderProducts()">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+          <span style="font-size:11px;color:var(--mu);white-space:nowrap">並び</span>
+          <button type="button" data-master-pick-sort="code" onclick="setMasterPickSort('code')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--nv);color:#fff">品番順</button>
+          <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
+          <input class="search-box" type="text" id="prod-search" placeholder="品番または品目名で検索..." oninput="renderProducts()" style="margin:0;flex:1;min-width:160px">
+        </div>
+        <div class="master-pick-initials" id="prod-list-initials" aria-label="頭文字で絞り込み" style="margin-bottom:8px"></div>
         <div style="max-height:480px;overflow-y:auto;border:0.5px solid var(--b2);border-radius:6px">
           <table class="ptbl"><thead><tr><th style="width:110px">品番</th><th>品目名</th><th style="width:80px;text-align:center">操作</th></tr></thead><tbody id="prod-tbody"></tbody></table>
         </div>
@@ -977,7 +993,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <p><span class="help-tag">マスタ管理</span> → 客先編集 で、客先ごとに次を設定します。</p>
       <div class="help-step"><div class="help-step-num">1</div><div class="help-step-body"><div class="help-step-title">締め日</div>20日〆・25日〆・末日〆から選択。請求月の判定に使います（客先ごとに異なってOK）。</div></div>
       <div class="help-step"><div class="help-step-num">2</div><div class="help-step-body"><div class="help-step-title">請求単価</div>各品目の「請求単価」列にまとめて入力（<strong>Enter</strong> で次の単価へ縦移動。品番はクリック時のみ） → 下の <span class="help-tag">請求単価・品目を保存</span> を1回押す。1件ごとに保存する必要はありません。<strong>伝票には表示されません。</strong> 請求明細の画面表示・印刷・Excel に使います。</div></div>
-      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">品目・納品サイクル</div>品目名と納品曜日（月〜日）を客先ごとに登録。<span class="help-tag">マスタから選ぶ</span> では <span class="help-tag">品番順</span>／<span class="help-tag">あいうえお順</span> を切り替えられます（伝票発行の「マスタから追加」も同じ）。</div></div>
+      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">品目・納品サイクル</div>品目名と納品曜日（月〜日）を客先ごとに登録。<span class="help-tag">マスタから選ぶ</span>・伝票の <span class="help-tag">マスタから追加</span>・商品コード一覧では、<span class="help-tag">品番順</span>／<span class="help-tag">あいうえお順</span> の切り替えと、<span class="help-tag">あ・か・さ…／A・B・C…</span> の頭文字絞り込みが使えます。</div></div>
       <div class="help-step"><div class="help-step-num">4</div><div class="help-step-body"><div class="help-step-title">最低保証（必要な客先のみ）</div>月額の税抜最低保証円を入力。請求明細の小計がこれを下回るときは、保証額で請求します（消費税はその上に10%）。空欄は保証なし。</div></div>
       <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">配送費（必要な客先のみ）</div>1回あたりの税抜配送費を入力。請求明細書では<strong>伝票1枚につき1回</strong>「配送費」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
       <div class="help-step"><div class="help-step-num">6</div><div class="help-step-body"><div class="help-step-title">包装料（必要な客先のみ）</div>1点あたりの税抜包装料を入力。請求明細書では<strong>その納品の総点数×単価</strong>で「包装料」行が自動加算されます。<strong>伝票の印刷・画面には出ません。</strong> 空欄は加算なし。</div></div>
@@ -1256,7 +1272,7 @@ function fillGrpSel(id,cur){const s=document.getElementById(id);if(!s)return;con
 function nxtDel(cyc){if(!cyc)return null;const m={月:1,火:2,水:3,木:4,金:5,土:6,日:0};const tw=new Date().getDay();let min=99;for(const c of cyc){if(m[c]!==undefined){const d=(m[c]-tw+7)%7;if(d<min)min=d;}}if(min===99)return null;const r=new Date();r.setDate(r.getDate()+min);return r;}
 function fmtD(d){if(!d)return'—';return fmtDateStr(d);}
 function nextPCode(){let max=0;DB.products.forEach(p=>{const m=p.code.match(/P(\d+)/i);if(m)max=Math.max(max,parseInt(m[1]));});Object.values(DB.clients).forEach(cl=>{(cl.items||[]).forEach(it=>{const m=it.code.match(/P(\d+)/i);if(m)max=Math.max(max,parseInt(m[1]));});});return 'P'+String(max+1).padStart(3,'0');}
-function init(){load();pruneExpiredHistory({quiet:true});pruneDeletedHistory({quiet:true});const now=new Date();document.getElementById('hdr-d').innerHTML=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${WD[now.getDay()]}曜日`;fillSel('csel');fillSel('msel');fillGrpSel('e-grp');fillGrpSel('nc-grp');renderProducts();renderHistory();renderGroups();renderClientGrpList();setNPCode();setNC2();initMeisaiMonth();updateBillingPendingBadge();syncMasterPickSortUi();}
+function init(){load();pruneExpiredHistory({quiet:true});pruneDeletedHistory({quiet:true});const now=new Date();document.getElementById('hdr-d').innerHTML=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${WD[now.getDay()]}曜日`;fillSel('csel');fillSel('msel');fillGrpSel('e-grp');fillGrpSel('nc-grp');renderProducts();renderHistory();renderGroups();renderClientGrpList();setNPCode();setNC2();initMeisaiMonth();updateBillingPendingBadge();syncMasterPickSortUi();renderMasterPickInitials();}
 function toast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.style.borderLeftColor=type==='e'?'#c0392b':'var(--ac)';t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 
 // ===== 伝票発行 =====
@@ -1280,10 +1296,46 @@ function resetQ(){qtys={};bikos={};extraItems=[];renderItems();setTimeout(fitIar
 function removeExtra(i){extraItems.splice(i,1);renderItems();setTimeout(fitIareaBody,80);}
 function toggleAddArea(){if(!curC){toast('客先を先に選択してください','e');return;}const el=document.getElementById('add-item-area');const showing=el.style.display!=='none';el.style.display=showing?'none':'block';if(!showing)fillMasterAddSel();}
 function switchAddTab(tab,btn){document.querySelectorAll('.add-item-tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.add-item-panel').forEach(p=>p.classList.remove('on'));btn.classList.add('on');document.getElementById('add-panel-'+tab).classList.add('on');}
-function fillMasterAddSel(){const sel=document.getElementById('master-add-sel');if(!sel)return;sel.innerHTML='<option value="">— 商品を選択 —</option>'+sortedProductsForPick().map(p=>`<option value="${escH(p.code)}">${escH(p.code)}　${escH(p.name)}</option>`).join('');syncMasterPickSortUi();}
+function fillMasterAddSel(){const sel=document.getElementById('master-add-sel');if(!sel)return;sel.innerHTML='<option value="">— 商品を選択 —</option>'+sortedProductsForPick().map(p=>`<option value="${escH(p.code)}">${escH(p.code)}　${escH(p.name)}</option>`).join('');syncMasterPickSortUi();renderMasterPickInitials();}
+const MASTER_PICK_KANA_ROWS=[
+  {key:'ア',label:'あ',chars:'アイウエオァィゥェォヴ'},
+  {key:'カ',label:'か',chars:'カキクケコガギグゲゴヵヶ'},
+  {key:'サ',label:'さ',chars:'サシスセソザジズゼゾ'},
+  {key:'タ',label:'た',chars:'タチツテトダヂヅデドッ'},
+  {key:'ナ',label:'な',chars:'ナニヌネノ'},
+  {key:'ハ',label:'は',chars:'ハヒフヘホバビブベボパピプペポ'},
+  {key:'マ',label:'ま',chars:'マミムメモ'},
+  {key:'ヤ',label:'や',chars:'ヤユヨャュョ'},
+  {key:'ラ',label:'ら',chars:'ラリルレロ'},
+  {key:'ワ',label:'わ',chars:'ワヲンヮ'}
+];
+const MASTER_PICK_HW_KANA='ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝｧｨｩｪｫｬｭｮｯ';
+const MASTER_PICK_FW_KANA='アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンァィゥェォャュョッ';
+function toFullKatakanaChar(ch){
+  const c=String(ch||'');
+  if(!c)return'';
+  const code=c.charCodeAt(0);
+  if(code>=0x3041&&code<=0x3096)return String.fromCharCode(code+0x60);
+  const hi=MASTER_PICK_HW_KANA.indexOf(c);
+  if(hi>=0)return MASTER_PICK_FW_KANA[hi];
+  return c;
+}
+function productNameInitialKey(name){
+  const s=String(name||'').trim();
+  if(!s)return'#';
+  let ch=toFullKatakanaChar(s[0]);
+  for(const row of MASTER_PICK_KANA_ROWS){if(row.chars.includes(ch))return row.key;}
+  const up=ch.toUpperCase();
+  if(/[A-Z]/.test(up))return up;
+  if(/[0-9０-９]/.test(ch))return'0';
+  return'#';
+}
 function sortedProductsForPick(excludeCodes){
   const ex=new Set(excludeCodes||[]);
   let list=(DB.products||[]).filter(p=>p&&p.code!=null&&!ex.has(p.code));
+  if(masterPickInitial){
+    list=list.filter(p=>productNameInitialKey(p.name)===masterPickInitial);
+  }
   if(masterPickSort==='name'){
     list=list.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ja')||String(a.code||'').localeCompare(String(b.code||''),'ja'));
   }else{
@@ -1292,12 +1344,23 @@ function sortedProductsForPick(excludeCodes){
   return list;
 }
 let masterPickSort=(function(){try{const v=localStorage.getItem('purims_master_pick_sort');return v==='name'?'name':'code';}catch(e){return'code';}})();
+let masterPickInitial=(function(){try{return localStorage.getItem('purims_master_pick_initial')||'';}catch(e){return'';}})();
 function setMasterPickSort(mode){
   masterPickSort=mode==='name'?'name':'code';
   try{localStorage.setItem('purims_master_pick_sort',masterPickSort);}catch(e){}
+  refreshMasterPickViews();
+}
+function setMasterPickInitial(key){
+  masterPickInitial=key===masterPickInitial?'':(key||'');
+  try{localStorage.setItem('purims_master_pick_initial',masterPickInitial);}catch(e){}
+  refreshMasterPickViews();
+}
+function refreshMasterPickViews(){
   syncMasterPickSortUi();
+  renderMasterPickInitials();
   fillMasterSel();
   fillMasterAddSel();
+  if(document.getElementById('prod-tbody'))renderProducts();
 }
 function syncMasterPickSortUi(){
   document.querySelectorAll('[data-master-pick-sort]').forEach(btn=>{
@@ -1305,6 +1368,27 @@ function syncMasterPickSortUi(){
     btn.style.background=on?'var(--nv)':'var(--w)';
     btn.style.color=on?'#fff':'var(--mu)';
     btn.style.borderColor=on?'var(--nv)':'var(--b2)';
+  });
+}
+function masterPickInitialButtonsHtml(available){
+  const avail=available||new Set();
+  const chips=[{key:'',label:'すべて'}]
+    .concat(MASTER_PICK_KANA_ROWS.map(r=>({key:r.key,label:r.label})))
+    .concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(L=>({key:L,label:L})))
+    .concat([{key:'0',label:'0-9'},{key:'#',label:'他'}]);
+  return chips.map(c=>{
+    const on=masterPickInitial===c.key;
+    const has=c.key===''||avail.has(c.key);
+    return`<button type="button" ${has?'':'disabled'} class="${on?'on':''}" onclick="setMasterPickInitial('${c.key}')">${c.label}</button>`;
+  }).join('');
+}
+function renderMasterPickInitials(){
+  const all=(DB.products||[]).filter(p=>p&&p.code!=null);
+  const avail=new Set(all.map(p=>productNameInitialKey(p.name)));
+  const html=masterPickInitialButtonsHtml(avail);
+  ['master-add-initials','ni-master-initials','prod-list-initials'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=html;
   });
 }
 function addFromMaster(){const sel=document.getElementById('master-add-sel');const qty=parseInt(document.getElementById('master-add-qty').value)||0;const biko=document.getElementById('master-add-biko').value.trim();if(!sel.value){toast('商品を選択してください','e');return;}if(qty<=0){toast('数量を1以上にしてください','e');return;}const prod=DB.products.find(p=>p.code===sel.value);if(!prod)return;extraItems.push({code:prod.code,name:prod.name,qty,biko});sel.value='';document.getElementById('master-add-qty').value=1;document.getElementById('master-add-biko').value='';renderItems();toast('「'+prod.name+'」を追加しました');}
@@ -2853,7 +2937,7 @@ function toggleCycBtn(btn,day,hiddenId){btn.classList.toggle('on');syncCycHidden
 function syncCycHidden(wrapperId,hiddenId){const wrap=document.getElementById(wrapperId);const hidden=document.getElementById(hiddenId);if(!wrap||!hidden)return;const val=CYC_DAYS.filter(d=>[...wrap.querySelectorAll('.cyc-btn')][CYC_DAYS.indexOf(d)]?.classList.contains('on')).join('');hidden.value=val;}
 function onMC(){editC=document.getElementById('msel').value||null;masterItemsDirty=false;if(!editC){document.getElementById('medit').style.display='none';const bar=document.getElementById('mitems-save-bar');if(bar)bar.style.display='none';return;}document.getElementById('medit').style.display='block';document.getElementById('e-name').value=editC;renderCycBtns('e-cyc-btns','e-cyc',DB.cycles[editC]||'');fillGrpSel('e-grp',DB.clientGroups[editC]||'');document.getElementById('e-closing').value=DB.closing[editC]||'';const mcEl=document.getElementById('e-mincharge');if(mcEl)mcEl.value=(DB.minCharge&&DB.minCharge[editC])||'';const dfEl=document.getElementById('e-delivery-fee');if(dfEl)dfEl.value=(DB.deliveryFee&&DB.deliveryFee[editC])||'';const pfEl=document.getElementById('e-packaging-fee');if(pfEl)pfEl.value=(DB.packagingFee&&DB.packagingFee[editC])||'';const peEl=document.getElementById('e-parking-enabled');if(peEl)peEl.checked=isParkingEnabled(editC);setNC2();fillMasterSel();renderMItems();}
 function switchAddTab2(tab){const isMaster=tab==='master';document.getElementById('add-tab-master').style.background=isMaster?'var(--nv)':'var(--s)';document.getElementById('add-tab-master').style.color=isMaster?'#fff':'var(--mu)';document.getElementById('add-tab-free').style.background=isMaster?'var(--s)':'var(--nv)';document.getElementById('add-tab-free').style.color=isMaster?'var(--mu)':'#fff';document.getElementById('add-area-master').style.display=isMaster?'flex':'none';document.getElementById('add-area-free').style.display=isMaster?'none':'flex';}
-function fillMasterSel(){const sel=document.getElementById('ni-master-sel');if(!sel)return;const existing=(DB.clients[editC]?.items||[]).map(i=>i.code);sel.innerHTML='<option value="">— 品目を選択 —</option>';sortedProductsForPick(existing).forEach(p=>{const opt=document.createElement('option');opt.value=p.code;opt.textContent=p.code+'　'+p.name;sel.appendChild(opt);});syncMasterPickSortUi();}
+function fillMasterSel(){const sel=document.getElementById('ni-master-sel');if(!sel)return;const existing=(DB.clients[editC]?.items||[]).map(i=>i.code);sel.innerHTML='<option value="">— 品目を選択 —</option>';sortedProductsForPick(existing).forEach(p=>{const opt=document.createElement('option');opt.value=p.code;opt.textContent=p.code+'　'+p.name;sel.appendChild(opt);});syncMasterPickSortUi();renderMasterPickInitials();}
 function addItemFromMaster(){const sel=document.getElementById('ni-master-sel');const code=sel.value;if(!code){toast('品目を選択してください','e');return;}const prod=(DB.products||[]).find(p=>p.code===code);if(!prod){toast('品目が見つかりません','e');return;}if(!DB.clients[editC])return;flushMItemsFromDom();DB.clients[editC].items.push({code:prod.code,name:prod.name});persist();setMasterItemsDirty(false);fillMasterSel();renderMItems();toast(`「${prod.name}」を追加しました`);}
 function setNC2(){const el=document.getElementById('ni-code');if(el){el.placeholder=nextPCode()+' (自動)';el.value='';}}
 let masterItemsDirty=false;
@@ -2968,7 +3052,18 @@ function toggleCgGroup(gid){cgCollapsed[gid]=!cgCollapsed[gid];renderClientGrpLi
 function setClientGrp(client,gid){if(gid)DB.clientGroups[client]=gid;else delete DB.clientGroups[client];persist();renderGroups();renderClientGrpList();fillSel('csel',curC);fillSel('msel',editC);toast('グループを更新しました');}
 
 // ===== 商品マスタ =====
-function renderProducts(){const q=(document.getElementById('prod-search')?.value||'').toLowerCase();const filtered=DB.products.filter(p=>p.code.toLowerCase().includes(q)||p.name.toLowerCase().includes(q));document.getElementById('prod-count').textContent=`全${DB.products.length}件 / 表示${filtered.length}件`;document.getElementById('prod-tbody').innerHTML=filtered.map(p=>{const ri=DB.products.findIndex(x=>x.code===p.code&&x.name===p.name);return`<tr><td><input class="ei enter-skip" value="${p.code}" onblur="updProd(${ri},'code',this.value)" style="font-family:monospace;width:90px"></td><td><input class="ei" value="${p.name}" onblur="updProd(${ri},'name',this.value)"></td><td style="text-align:center"><button class="bdel" onclick="delProd(${ri})">削除</button></td></tr>`;}).join('')||'<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--mu)">該当なし</td></tr>';}
+function renderProducts(){
+  const q=(document.getElementById('prod-search')?.value||'').toLowerCase();
+  let filtered=sortedProductsForPick();
+  if(q)filtered=filtered.filter(p=>String(p.code||'').toLowerCase().includes(q)||String(p.name||'').toLowerCase().includes(q));
+  document.getElementById('prod-count').textContent=`全${DB.products.length}件 / 表示${filtered.length}件`;
+  document.getElementById('prod-tbody').innerHTML=filtered.map(p=>{
+    const ri=DB.products.findIndex(x=>x.code===p.code&&x.name===p.name);
+    return`<tr><td><input class="ei enter-skip" value="${escH(p.code)}" onblur="updProd(${ri},'code',this.value)" style="font-family:monospace;width:90px"></td><td><input class="ei" value="${escH(p.name)}" onblur="updProd(${ri},'name',this.value)"></td><td style="text-align:center"><button class="bdel" onclick="delProd(${ri})">削除</button></td></tr>`;
+  }).join('')||'<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--mu)">該当なし</td></tr>';
+  syncMasterPickSortUi();
+  renderMasterPickInitials();
+}
 function updProd(i,f,v){if(DB.products[i])DB.products[i][f]=v.trim();persistLocal();}
 function delProd(i){if(!confirm(`「${DB.products[i]?.code} ${DB.products[i]?.name}」を削除しますか？`))return;DB.products.splice(i,1);persist();renderProducts();setNPCode();toast('削除しました');}
 function setNPCode(){document.getElementById('np-code').placeholder=nextPCode()+' (自動)';document.getElementById('np-code').value='';}
@@ -3896,6 +3991,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-10-17',type:'feat',text:'品目選択に頭文字絞り込み（あ・か・さ…／A・B・C）を追加。品番順・あいうえお順と併用可'},
   {date:'2026-10-04',type:'fix',text:'伝票印刷の長い客先名は1行のまま、小さくし過ぎず字間で調整するようにした'},
   {date:'2026-09-28',type:'feat',text:'マスタから品目を選ぶとき、品番順／あいうえお順を切り替えられるようにした'},
   {date:'2026-09-28',type:'fix',text:'品目0件の客先がクラウド保存で消える不具合を修正。履歴からの復元ボタンも追加'},
