@@ -624,7 +624,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
             <button type="button" data-master-pick-sort="name" onclick="setMasterPickSort('name')" style="padding:5px 10px;border-radius:5px;border:1px solid var(--b2);cursor:pointer;font-size:12px;font-weight:600;background:var(--w);color:var(--mu)">あいうえお順</button>
             <span style="font-size:11px;color:var(--mu);white-space:nowrap">頭文字</span>
             <select class="master-pick-initial-sel" id="master-add-initials" aria-label="頭文字で絞り込み" onchange="setMasterPickInitial(this.value)"></select>
-            <select class="add-item-sel" id="master-add-sel"><option value="">— 商品を選択 —</option></select>
+            <select class="add-item-sel" id="master-add-sel" onchange="syncAddBikoDimMode('master')"><option value="">— 商品を選択 —</option></select>
             <input type="number" class="qty" data-enter-col="qty" style="width:70px" id="master-add-qty" min="1" value="1">
             <input type="text" class="enter-skip" style="padding:7px 10px;border:1.5px solid var(--b2);border-radius:6px;font-size:12px;background:var(--w);color:var(--tx);width:130px" id="master-add-biko" placeholder="備考（任意）">
             <button class="btn pri" style="padding:7px 14px;font-size:13px;white-space:nowrap" onclick="addFromMaster()">追加</button>
@@ -965,7 +965,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">履歴</div><div class="help-step-body"><div class="help-step-title">まとめて再印刷</div><span class="help-tag">発行履歴</span>（発行日別は <strong>月 → 日付</strong> のフォルダ）で伝票の行をクリックすると品目の詳細が開きます。伝票左のチェックを入れ → <span class="help-tag">選択した伝票をまとめて印刷</span>。1件だけなら明細内の <span class="help-tag">伝票印刷</span> でも再発行できます。</div></div>
       <div class="help-note">💡 印刷面は左右2枚。左は「委託洗濯伝票」、右だけ「委託洗濯伝票　(納品控)」です。</div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">発行伝票のチェック済み</div><span class="help-tag">請求</span> タブでまず<strong>締め日</strong>（20日〆／25日〆／末日〆）を選び、ミニカレンダー（または請求明細書ビューア左上）の<strong>納品日</strong>をクリックすると、その締めのその日以前を事務確認済みとして記録します。チェック済みは締め日ごとに別管理。「○○〆 チェック済み: 納品日 ○○まで」と表示。カレンダー左側の一覧は、<strong>チェック済みにしたあと</strong>に発行した伝票だけを<strong>発行あり・客先名・納品日</strong>で出します。行のチェックを入れると一覧から消えます（<span class="help-tag">表示中を消す</span>でまとめても消せます）。同じ客先・納品日で新規発行しようとしたとき、チェック済み期間なら警告文にその旨が出ます。</div></div>
-      <div class="help-note">💡 <strong>Enter</strong>：数量は次の数量へ、請求単価は次の単価へ（列の縦移動）。品番・備考は通常スキップ（必要なときだけクリック）。</div>
+      <div class="help-note">💡 <strong>Enter</strong>：数量は次の数量へ、請求単価は次の単価へ（列の縦移動）。品番・備考は通常スキップ（必要なときだけクリック）。<strong>のれん</strong>だけ例外で、数量→備考へ進み、備考は<strong>数字と Enter だけ</strong>（横の数字 → Enter → 縦の数字 → Enter）で <code>120×90</code> の形になります。</div>
       <div class="help-note">💡 データはクラウド（Firebase）に自動保存されます。別のPCで開いても同じデータが表示されます。</div>
       <div class="help-note">💡 <strong>発行履歴の保存期間は6か月</strong>です（納品日基準）。6か月を超えた伝票はアプリ起動・クラウド読み込み時に自動削除されます。必要な分は事前にCSV/請求Excelで保存してください。伝票を<strong>削除</strong>・<strong>発行取消</strong>・期間超過で消したときは、<span class="help-tag">発行履歴</span> の <span class="help-tag">削除履歴</span> タブに記録が残ります（12か月）。誤削除なら「履歴に戻す」で復元できます。</div>
     </div>
@@ -1283,7 +1283,60 @@ function updateChips(){if(!curC)return;const cyc=DB.cycles[curC]||'';document.ge
 function startCyc(){if(!curC)return;document.getElementById('cyc-v').style.display='none';document.getElementById('cyc-edit-hint').style.display='none';renderCycBtns('slip-cyc-btns','slip-cyc',DB.cycles[curC]||'');document.getElementById('cyc-btn-area').style.display='flex';}
 function saveCycBtns(){if(!curC)return;const val=document.getElementById('slip-cyc').value.trim();DB.cycles[curC]=val;persist();if(!customDeliveryDate){document.getElementById('nd-v').textContent=fmtD(nxtDel(val));}updateChips();if(editC===curC)renderCycBtns('e-cyc-btns','e-cyc',val);toast('サイクルを更新しました');}
 function cancelCyc(){document.getElementById('cyc-btn-area').style.display='none';document.getElementById('cyc-v').style.display='';document.getElementById('cyc-edit-hint').style.display='';}
-function renderItems(){if(!curC)return;const items=DB.clients[curC]?.items||[];const masterRows=items.map((it,i)=>`<tr><td><span class="cbdg">${it.code}</span></td><td>${it.name}</td><td style="text-align:center"><input class="qty${qtys[i]?' f':''}" data-enter-col="qty" type="number" min="0" value="${qtys[i]||''}" placeholder="0" oninput="setQ(${i},this)"></td><td><input class="enter-skip" style="width:100%;padding:4px 6px;border:1px solid var(--b2);border-radius:4px;font-size:12px;background:var(--w);color:var(--tx)" type="text" value="${bikos[i]||''}" placeholder="備考" oninput="bikos[${i}]=this.value"></td><td></td></tr>`).join('');const extraRows=extraItems.map((it,i)=>`<tr class="extra-row"><td><span class="cbdg">${it.code}</span></td><td>${it.name} <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;padding:1px 5px;border-radius:4px">追加</span></td><td style="text-align:center"><input class="qty${it.qty?' f':''}" data-enter-col="qty" type="number" min="0" value="${it.qty||''}" placeholder="0" oninput="setEQ(${i},this)"></td><td><input class="enter-skip" style="width:100%;padding:4px 6px;border:1px solid var(--b2);border-radius:4px;font-size:12px;background:var(--w);color:var(--tx)" type="text" value="${it.biko||''}" placeholder="備考" oninput="extraItems[${i}].biko=this.value"></td><td style="text-align:center"><button class="btn-rm" onclick="removeExtra(${i})">✕</button></td></tr>`).join('');const hasAny=items.length||extraItems.length;if(!hasAny){document.getElementById('iarea').innerHTML='<div class="emp">品目が登録されていません</div>';return;}const COL='<colgroup><col style="width:12%"><col style="width:38%"><col style="width:15%"><col style="width:35%"><col style="width:32px"></colgroup>';document.getElementById('iarea').innerHTML=`<div class="iarea-wrap"><div class="iarea-thead"><table>${COL}<thead><tr><th>品番</th><th>品　名</th><th style="text-align:center">数　量</th><th>備　考</th><th></th></tr></thead></table></div><div class="iarea-body" id="iarea-body"><table>${COL}<tbody>${masterRows}${extraRows}</tbody></table></div></div>`;setTimeout(applyZoom,0);}
+function isNorenItem(name){return /のれん/.test(String(name||''));}
+function bikoDimAttrs(name,value,oninput){
+  const v=escH(value||'');
+  if(isNorenItem(name)){
+    return`class="biko-dim" data-biko-dim="1" style="width:100%;padding:4px 6px;border:1px solid var(--b2);border-radius:4px;font-size:12px;background:var(--w);color:var(--tx)" type="text" inputmode="numeric" value="${v}" placeholder="横→Enter→縦" title="数字とEnterだけ。例: 120 Enter 90 Enter → 120×90" oninput="${oninput}"`;
+  }
+  return`class="enter-skip" style="width:100%;padding:4px 6px;border:1px solid var(--b2);border-radius:4px;font-size:12px;background:var(--w);color:var(--tx)" type="text" value="${v}" placeholder="備考" oninput="${oninput}"`;
+}
+function normalizeDimBikoText(raw){
+  return String(raw||'').trim().replace(/[xX＊*✕×]/g,'×').replace(/\s+/g,'');
+}
+/** Enter on biko-dim: 'stay' = keep focus after inserting ×, 'leave' = move on */
+function handleDimBikoEnter(el){
+  if(!el)return'leave';
+  let v=normalizeDimBikoText(el.value);
+  if(!v){el.value='';syncBikoFromInput(el);return'leave';}
+  if(!v.includes('×')){
+    if(/^\d+$/.test(v)){
+      el.value=v+'×';
+      syncBikoFromInput(el);
+      try{el.setSelectionRange(el.value.length,el.value.length);}catch(err){}
+      return'stay';
+    }
+    el.value=v;syncBikoFromInput(el);return'leave';
+  }
+  const parts=v.split('×');
+  const w=parts[0]||'',h=(parts[1]||'');
+  if(/^\d+$/.test(w)&&h===''){
+    el.value=w+'×';
+    syncBikoFromInput(el);
+    try{el.setSelectionRange(el.value.length,el.value.length);}catch(err){}
+    return'stay';
+  }
+  if(/^\d+$/.test(w)&&/^\d+$/.test(h)){
+    el.value=w+'×'+h;
+    syncBikoFromInput(el);
+    return'leave';
+  }
+  el.value=v;syncBikoFromInput(el);return'leave';
+}
+function syncBikoFromInput(el){
+  if(!el)return;
+  const tr=el.closest('tr');
+  if(!tr)return;
+  const tbody=tr.parentElement;
+  if(!tbody)return;
+  const rows=[...tbody.querySelectorAll('tr')];
+  const ri=rows.indexOf(tr);
+  const masterLen=(DB.clients[curC]?.items||[]).length;
+  if(ri<0)return;
+  if(ri<masterLen)bikos[ri]=el.value;
+  else if(extraItems[ri-masterLen])extraItems[ri-masterLen].biko=el.value;
+}
+function renderItems(){if(!curC)return;const items=DB.clients[curC]?.items||[];const masterRows=items.map((it,i)=>`<tr><td><span class="cbdg">${it.code}</span></td><td>${it.name}</td><td style="text-align:center"><input class="qty${qtys[i]?' f':''}" data-enter-col="qty" type="number" min="0" value="${qtys[i]||''}" placeholder="0" oninput="setQ(${i},this)"></td><td><input ${bikoDimAttrs(it.name,bikos[i],`bikos[${i}]=this.value`)}></td><td></td></tr>`).join('');const extraRows=extraItems.map((it,i)=>`<tr class="extra-row"><td><span class="cbdg">${it.code}</span></td><td>${it.name} <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;padding:1px 5px;border-radius:4px">追加</span></td><td style="text-align:center"><input class="qty${it.qty?' f':''}" data-enter-col="qty" type="number" min="0" value="${it.qty||''}" placeholder="0" oninput="setEQ(${i},this)"></td><td><input ${bikoDimAttrs(it.name,it.biko,`extraItems[${i}].biko=this.value`)}></td><td style="text-align:center"><button class="btn-rm" onclick="removeExtra(${i})">✕</button></td></tr>`).join('');const hasAny=items.length||extraItems.length;if(!hasAny){document.getElementById('iarea').innerHTML='<div class="emp">品目が登録されていません</div>';return;}const COL='<colgroup><col style="width:12%"><col style="width:38%"><col style="width:15%"><col style="width:35%"><col style="width:32px"></colgroup>';document.getElementById('iarea').innerHTML=`<div class="iarea-wrap"><div class="iarea-thead"><table>${COL}<thead><tr><th>品番</th><th>品　名</th><th style="text-align:center">数　量</th><th>備　考</th><th></th></tr></thead></table></div><div class="iarea-body" id="iarea-body"><table>${COL}<tbody>${masterRows}${extraRows}</tbody></table></div></div>`;setTimeout(applyZoom,0);}
 function fitIareaBody(){const body=document.getElementById('iarea-body');if(!body)return;const wrap=document.querySelector('.iarea-wrap');if(!wrap)return;const thead=wrap.querySelector('.iarea-thead');const addArea=document.getElementById('add-item-area');const addH=(addArea&&addArea.style.display!=='none')?addArea.offsetHeight+8:0;const wrapTop=wrap.getBoundingClientRect().top;const theadH=thead?thead.offsetHeight:0;const brow=document.getElementById('sbtns');const browH=brow?brow.offsetHeight:0;const available=window.innerHeight-wrapTop-theadH-addH-browH-24;body.style.maxHeight=Math.max(available,120)+'px';}
 window.addEventListener('resize',()=>{fitIareaBody();resizeScrollPanel();if(document.getElementById('meisai-viewer')?.classList.contains('open'))fitMeisaiViewerSheet();});
 function resizeScrollPanel(){const scrollPanels=['master','history','data','help','billing'];const hdrH=document.querySelector('.hdr').offsetHeight;const tabH=document.querySelector('.tabs').offsetHeight;const h=window.innerHeight-hdrH-tabH;scrollPanels.forEach(id=>{const p=document.getElementById('panel-'+id);if(p&&p.classList.contains('on'))p.style.height=h+'px';});}
@@ -1436,10 +1489,40 @@ function renderMasterPickInitials(){
     el.value=cur;
   });
 }
-function addFromMaster(){const sel=document.getElementById('master-add-sel');const qty=parseInt(document.getElementById('master-add-qty').value)||0;const biko=document.getElementById('master-add-biko').value.trim();if(!sel.value){toast('商品を選択してください','e');return;}if(qty<=0){toast('数量を1以上にしてください','e');return;}const prod=DB.products.find(p=>p.code===sel.value);if(!prod)return;extraItems.push({code:prod.code,name:prod.name,qty,biko});sel.value='';document.getElementById('master-add-qty').value=1;document.getElementById('master-add-biko').value='';renderItems();toast('「'+prod.name+'」を追加しました');}
-function onFreeNameInput(el){const v=el.value.trim();const hint=document.getElementById('free-match-hint');if(!v){hint.textContent='';return;}const matched=DB.products.find(p=>p.name===v||p.code===v.toUpperCase());if(matched){hint.innerHTML='<span style="color:#2e7d32">✅ マスタに一致: <strong>'+matched.code+'　'+matched.name+'</strong></span>';}else{const partial=DB.products.filter(p=>p.name.includes(v)).slice(0,3);if(partial.length){hint.innerHTML='<span style="color:var(--mu)">候補: '+partial.map(p=>'<span style="cursor:pointer;color:var(--ac);text-decoration:underline" onclick="setFreeHint(\''+p.name.replace(/'/g,"\\'")+'\')">' +p.name+'</span>').join('　')+'</span>';}else{hint.innerHTML='<span style="color:var(--mu)">マスタにない品名です</span>';}}}
+function setAddBikoDimMode(bikoEl,isDim){
+  if(!bikoEl)return;
+  if(isDim){
+    bikoEl.classList.remove('enter-skip');
+    bikoEl.classList.add('biko-dim');
+    bikoEl.setAttribute('data-biko-dim','1');
+    bikoEl.setAttribute('inputmode','numeric');
+    bikoEl.placeholder='横→Enter→縦';
+    bikoEl.title='数字とEnterだけ。例: 120 Enter 90 Enter → 120×90';
+  }else{
+    bikoEl.classList.add('enter-skip');
+    bikoEl.classList.remove('biko-dim');
+    bikoEl.removeAttribute('data-biko-dim');
+    bikoEl.removeAttribute('inputmode');
+    bikoEl.placeholder='備考（任意）';
+    bikoEl.title='';
+  }
+}
+function syncAddBikoDimMode(which){
+  if(which==='master'||!which){
+    const sel=document.getElementById('master-add-sel');
+    const prod=sel&&sel.value?DB.products.find(p=>p.code===sel.value):null;
+    setAddBikoDimMode(document.getElementById('master-add-biko'),isNorenItem(prod&&prod.name));
+  }
+  if(which==='free'||!which){
+    const name=document.getElementById('free-add-name')?.value.trim()||'';
+    const matched=DB.products.find(p=>p.name===name||p.code===name.toUpperCase());
+    setAddBikoDimMode(document.getElementById('free-add-biko'),isNorenItem(matched?matched.name:name));
+  }
+}
+function addFromMaster(){const sel=document.getElementById('master-add-sel');const qty=parseInt(document.getElementById('master-add-qty').value)||0;const biko=normalizeDimBikoText(document.getElementById('master-add-biko').value);if(!sel.value){toast('商品を選択してください','e');return;}if(qty<=0){toast('数量を1以上にしてください','e');return;}const prod=DB.products.find(p=>p.code===sel.value);if(!prod)return;extraItems.push({code:prod.code,name:prod.name,qty,biko});sel.value='';document.getElementById('master-add-qty').value=1;document.getElementById('master-add-biko').value='';syncAddBikoDimMode('master');renderItems();toast('「'+prod.name+'」を追加しました');}
+function onFreeNameInput(el){const v=el.value.trim();const hint=document.getElementById('free-match-hint');syncAddBikoDimMode('free');if(!v){hint.textContent='';return;}const matched=DB.products.find(p=>p.name===v||p.code===v.toUpperCase());if(matched){hint.innerHTML='<span style="color:#2e7d32">✅ マスタに一致: <strong>'+matched.code+'　'+matched.name+'</strong></span>';}else{const partial=DB.products.filter(p=>p.name.includes(v)).slice(0,3);if(partial.length){hint.innerHTML='<span style="color:var(--mu)">候補: '+partial.map(p=>'<span style="cursor:pointer;color:var(--ac);text-decoration:underline" onclick="setFreeHint(\''+p.name.replace(/'/g,"\\'")+'\')">' +p.name+'</span>').join('　')+'</span>';}else{hint.innerHTML='<span style="color:var(--mu)">マスタにない品名です</span>';}}}
 function setFreeHint(name){document.getElementById('free-add-name').value=name;onFreeNameInput(document.getElementById('free-add-name'));}
-function addFromFree(){const nameRaw=document.getElementById('free-add-name').value.trim();const qty=parseInt(document.getElementById('free-add-qty').value)||0;const biko=document.getElementById('free-add-biko').value.trim();if(!nameRaw){toast('品名を入力してください','e');return;}if(qty<=0){toast('数量を1以上にしてください','e');return;}const matched=DB.products.find(p=>p.name===nameRaw||p.code===nameRaw.toUpperCase());const code=matched?matched.code:'---';const name=matched?matched.name:nameRaw;extraItems.push({code,name,qty,biko});document.getElementById('free-add-name').value='';document.getElementById('free-add-qty').value=1;document.getElementById('free-add-biko').value='';document.getElementById('free-match-hint').textContent='';renderItems();toast('「'+name+'」を追加しました');}
+function addFromFree(){const nameRaw=document.getElementById('free-add-name').value.trim();const qty=parseInt(document.getElementById('free-add-qty').value)||0;const biko=normalizeDimBikoText(document.getElementById('free-add-biko').value);if(!nameRaw){toast('品名を入力してください','e');return;}if(qty<=0){toast('数量を1以上にしてください','e');return;}const matched=DB.products.find(p=>p.name===nameRaw||p.code===nameRaw.toUpperCase());const code=matched?matched.code:'---';const name=matched?matched.name:nameRaw;extraItems.push({code,name,qty,biko});document.getElementById('free-add-name').value='';document.getElementById('free-add-qty').value=1;document.getElementById('free-add-biko').value='';document.getElementById('free-match-hint').textContent='';syncAddBikoDimMode('free');renderItems();toast('「'+name+'」を追加しました');}
 
 // ===== 伝票印刷 =====
 /** 客先名の見た目の長さ（半角は短く数える） */
@@ -2881,9 +2964,51 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
     const t=e.target;
     if(t&&(t.id==='login-pass'||t.id==='admin-pass-input'))return;
+    // のれん備考: 横 Enter → × → 縦 Enter → 次へ
+    if(t&&t.classList&&t.classList.contains('biko-dim')){
+      e.preventDefault();
+      if(handleDimBikoEnter(t)==='stay')return;
+      focusNextQtyAfterBiko(t);
+      return;
+    }
+    // のれん数量>0 の Enter → 備考（寸法）へ
+    if(t&&t.classList&&t.classList.contains('qty')&&(parseInt(t.value,10)||0)>0){
+      const tr=t.closest('tr');
+      const dim=tr&&tr.querySelector('input.biko-dim');
+      if(dim){
+        e.preventDefault();
+        dim.focus();
+        try{dim.select();}catch(err){}
+        return;
+      }
+    }
+    // マスタ追加／自由追加: のれん選択時は数量→備考
+    if(t&&(t.id==='master-add-qty'||t.id==='free-add-qty')&&(parseInt(t.value,10)||0)>0){
+      const bikoId=t.id==='master-add-qty'?'master-add-biko':'free-add-biko';
+      const bikoEl=document.getElementById(bikoId);
+      if(bikoEl&&bikoEl.classList.contains('biko-dim')){
+        e.preventDefault();
+        bikoEl.focus();
+        try{bikoEl.select();}catch(err){}
+        return;
+      }
+    }
     if(canEnterNavigateFrom(t)){
       e.preventDefault();
       focusNextEnterField(t);
+      return;
+    }
+  }
+  // のれん備考で * / x を打ったら × に置換（任意・誤打対策）
+  if(e.target&&e.target.classList&&e.target.classList.contains('biko-dim')&&!e.isComposing){
+    if(e.key==='*'||e.key==='x'||e.key==='X'||e.key==='/'){
+      e.preventDefault();
+      const el=e.target;
+      const start=el.selectionStart||0,end=el.selectionEnd||0;
+      const cur=String(el.value||'');
+      el.value=cur.slice(0,start)+'×'+cur.slice(end);
+      syncBikoFromInput(el);
+      try{el.setSelectionRange(start+1,start+1);}catch(err){}
       return;
     }
   }
@@ -2891,8 +3016,24 @@ document.addEventListener('keydown',e=>{
   if(document.getElementById('updates-modal')?.classList.contains('open')){closeUpdatesModal();return;}
   if(document.getElementById('meisai-viewer')?.classList.contains('open'))closeMeisaiViewer();
 });
+function focusNextQtyAfterBiko(bikoEl){
+  const root=getEnterNavRoot();
+  const qtys=[...root.querySelectorAll('input.qty[data-enter-col="qty"]')].filter(enterNavFieldVisible);
+  const tr=bikoEl.closest('tr');
+  const rowQty=tr&&tr.querySelector('input.qty');
+  const i=rowQty?qtys.indexOf(rowQty):-1;
+  const next=i>=0?qtys[i+1]:null;
+  if(next){
+    next.focus();
+    try{next.select();}catch(err){}
+    return true;
+  }
+  bikoEl.blur();
+  return false;
+}
 function canEnterNavigateFrom(el){
   if(!el)return false;
+  if(el.classList&&el.classList.contains('biko-dim'))return true;
   if(el.classList&&el.classList.contains('enter-skip')&&el.tagName==='INPUT'&&!el.disabled)return true;
   return isEnterNavField(el);
 }
@@ -4053,6 +4194,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-10-21',type:'feat',text:'のれんの備考寸法を数字とEnterだけで入力（数量→横→縦で120×90）'},
   {date:'2026-10-17',type:'feat',text:'漢字品目も読みで頭文字検索（例: 和帽子→わ）。読み欄（任意）で上書き可'},
   {date:'2026-10-17',type:'fix',text:'品目の頭文字絞り込みをボタン列からプルダウンに変更（場所を取らない）'},
   {date:'2026-10-17',type:'feat',text:'品目選択に頭文字絞り込み（あ・か・さ…／A・B・C）を追加。品番順・あいうえお順と併用可'},
