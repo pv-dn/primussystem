@@ -964,7 +964,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-step"><div class="help-step-num">注意</div><div class="help-step-body"><div class="help-step-title">同じ納品日の再打ち込みは不可</div>同じ客先・同じ納品日の伝票が既にあると、<strong>新規の打ち直し発行はできません</strong>。警告から案内どおり <span class="help-tag">発行履歴</span> → <span class="help-tag">訂正して再発行</span> で数量を直します。訂正すると履歴に「訂正再発行」と日時が残ります。</div></div>
       <div class="help-step"><div class="help-step-num">履歴</div><div class="help-step-body"><div class="help-step-title">まとめて再印刷</div><span class="help-tag">発行履歴</span>（発行日別は <strong>月 → 日付</strong> のフォルダ）で伝票の行をクリックすると品目の詳細が開きます。伝票左のチェックを入れ → <span class="help-tag">選択した伝票をまとめて印刷</span>。1件だけなら明細内の <span class="help-tag">伝票印刷</span> でも再発行できます。</div></div>
       <div class="help-note">💡 印刷面は左右2枚。左は「委託洗濯伝票」、右だけ「委託洗濯伝票　(納品控)」です。</div>
-      <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">発行伝票のチェック済み</div><span class="help-tag">請求</span> タブでまず<strong>締め日</strong>（20日〆／25日〆／末日〆）を選び、ミニカレンダー（または請求明細書ビューア左上）の<strong>納品日</strong>をクリックすると、その締めのその日以前を事務確認済みとして記録します。チェック済みは締め日ごとに別管理。「○○〆 チェック済み: 納品日 ○○まで」と表示。カレンダー左側の一覧は、<strong>チェック済みにしたあと</strong>に発行した伝票だけを<strong>発行あり・客先名・納品日</strong>で出します。行のチェックを入れると一覧から消えます（<span class="help-tag">表示中を消す</span>でまとめても消せます）。同じ客先・納品日で新規発行しようとしたとき、チェック済み期間なら警告文にその旨が出ます。</div></div>
+      <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">発行伝票のチェック済み</div><span class="help-tag">請求</span> タブでまず<strong>締め日</strong>（20日〆／25日〆／末日〆）を選び、ミニカレンダー（または請求明細書ビューア左上）の<strong>納品日</strong>をクリックすると、その締めのその日以前を事務確認済みとして記録します。チェック済みは締め日ごとに別管理。「○○〆 チェック済み: 納品日 ○○まで」と表示。カレンダー左側の一覧は、<strong>チェック済みにしたあと</strong>の<strong>新規発行</strong>と<strong>訂正再発行</strong>を<strong>発行あり／訂正あり・客先名・納品日</strong>で出します（事務が把握するため）。行のチェックを入れると一覧から消えます（<span class="help-tag">表示中を消す</span>でまとめても消せます）。同じ客先・納品日で新規発行しようとしたとき、チェック済み期間なら警告文にその旨が出ます。</div></div>
       <div class="help-note">💡 <strong>Enter</strong>：数量は次の数量へ、請求単価は次の単価へ（列の縦移動）。品番・備考は通常スキップ（必要なときだけクリック）。<strong>のれん</strong>だけ例外で、数量→備考へ進み、備考は<strong>数字と Enter だけ</strong>（横の数字 → Enter → 縦の数字 → Enter）で <code>120×90</code> の形になります。</div>
       <div class="help-note">💡 データはクラウド（Firebase）に自動保存されます。別のPCで開いても同じデータが表示されます。</div>
       <div class="help-note">💡 <strong>発行履歴の保存期間は6か月</strong>です（納品日基準）。6か月を超えた伝票はアプリ起動・クラウド読み込み時に自動削除されます。必要な分は事前にCSV/請求Excelで保存してください。伝票を<strong>削除</strong>・<strong>発行取消</strong>・期間超過で消したときは、<span class="help-tag">発行履歴</span> の <span class="help-tag">削除履歴</span> タブに記録が残ります（12か月）。誤削除なら「履歴に戻す」で復元できます。</div>
@@ -1004,7 +1004,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <p>Purims がブラウザ内で請求明細書を<strong>直接表示・印刷・Excel出力</strong>します。運用 PC に Excel テンプレート（.xlsm）を置く必要はありません。印刷レイアウトは<strong>プゥル・ヴー伝票アプリと同じ書式</strong>です（ネクサス名義）。</p>
       <div class="help-step"><div class="help-step-num">駐車場</div><div class="help-step-body"><div class="help-step-title">駐車場代を入力</div>マスタで「駐車場代あり」にした客先は、<span class="help-tag">請求</span> タブの <span class="help-tag">駐車場代入力</span> で客先を選び、領収書を見て金額を入力 → <span class="help-tag">駐車場代を保存</span>。請求明細・請求額一覧では例として <strong>あ</strong>（通常品目）と <strong>あ 駐車場代</strong>（駐車場のみ）の<strong>2枚／2行</strong>になります。駐車場明細書には<strong>金額を入れた日だけ</strong>出ます（空欄＝なしの日は数量も日付も出しません）。行は<strong>単価の安い順</strong>です。紙の★客先（茶茶花・楽園　町田店・穂のほまれ　西新宿店）は金額がなくても駐車場のシート枠は残ります。</div></div>
       <div class="help-step"><div class="help-step-num">確認</div><div class="help-step-body"><div class="help-step-title">アプリ内で見る</div><span class="help-tag">請求</span> タブ → 請求月を指定 → <span class="help-tag">請求明細書を見る</span>。左の客先一覧は紙の請求一覧表と同じ順（25日〆・末日〆の番号なしは後ろ）。クリックで切り替え。<span class="help-tag">未反映分を見る</span> で Excel 出力前の分も確認できます。</div></div>
-      <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。カレンダー左側には、<strong>チェック後に発行した分だけ</strong>「発行あり・客先名・納品日」が出ます。確認したら行のチェック（または <span class="help-tag">表示中を消す</span>）で一覧から消せます。</div></div>
+      <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">チェック済みにする</div>請求明細書を確認したら、<span class="help-tag">請求</span> タブ（または明細ビューア左上）で<strong>締め日</strong>を選び → ミニカレンダーの<strong>納品日</strong>をクリック。チェック済みは締め日ごとに分かれます。その締めの納品ありの日は薄い青、チェック済は緑です。カレンダー左側には、<strong>チェック後の新規発行・訂正再発行</strong>が「発行あり／訂正あり・客先名・納品日」で出ます。確認したら行のチェック（または <span class="help-tag">表示中を消す</span>）で一覧から消せます。</div></div>
       <div class="help-step"><div class="help-step-num">印刷</div><div class="help-step-body"><div class="help-step-title">明細書を印刷</div>明細表示中に <span class="help-tag">🖨 この客先を印刷</span>（表示中の1店）または <span class="help-tag">🖨 全店舗を印刷</span>（左一覧と同じ紙の順番で全店）。画面上はウィンドウに収まるよう自動で縮小表示します（印刷は実寸）。左の客先一覧は請求額一覧と同じ順で、<strong>20日締め／25日締め／末日締め</strong>の見出し付き。事務チェックは見出しクリックで開閉できます。用紙 <strong>A4 横向き</strong>・倍率 <strong>100%</strong>。</div></div>
       <div class="help-step"><div class="help-step-num">日次</div><div class="help-step-body"><div class="help-step-title">未反映→請求明細Excel</div>未反映の伝票（押し忘れ分を含む）を対象に、該当客先・請求月のシートを含む Excel を出力。ファイル名例: <code>purims_meisai_20250818.xlsx</code></div></div>
       <div class="help-step"><div class="help-step-num">月次</div><div class="help-step-body"><div class="help-step-title">請求月Excel出力</div><span class="help-tag">請求</span> または <span class="help-tag">データ</span> タブで年月を指定して再出力。ファイル名例: <code>purims_meisai_202508.xlsx</code></div></div>
@@ -1679,11 +1679,15 @@ function showPrev(){
     correctingHist.total=totalPts;
     correctingHist.deliveryDate=ds;
     correctingHist.correctedAt=todayIso();
+    correctingHist.correctedAtMs=Date.now();
     correctingHist.correctedBy=currentUser?currentUser.username:'';
     correctingHist.correctionCount=(Number(correctingHist.correctionCount)||0)+1;
+    /* 事務が再確認できるよう、消した「チェック後の発行」を戻す */
+    clearSlipIssuedAck(correctingHist.id);
     lastSlip={client:correctingHist.client,date:correctingHist.date,deliveryDate:ds,items:allItems,total:totalPts,issuedBy:correctingHist.issuedBy||''};
     histId=correctingHist.id;
     persistHistoryLocal();
+    persist();
     renderHistory();
     fbSaveHistoryEntry(correctingHist);
     _correctingHistId=null;
@@ -1886,16 +1890,35 @@ function getSlipCheckedAt(closingDay){
 function histIssuedAtMs(h){
   const raw=String(h&&h.id||'');
   const n=Number(raw);
-  if(n>1e14)return Math.floor(n/1000); /* newHistId: Date.now()+3桁 or 旧Date.now()*1000 */
-  if(n>1e11)return n;
-  const p=typeof parseYMD==='function'?parseYMD(h&&h.date):0;
-  return p||0;
+  let t=0;
+  if(n>1e14)t=Math.floor(n/1000); /* newHistId: Date.now()+3桁 or 旧Date.now()*1000 */
+  else if(n>1e11)t=n;
+  else{
+    const p=typeof parseYMD==='function'?parseYMD(h&&h.date):0;
+    t=p||0;
+  }
+  /* 訂正再発行も「チェック後の発行」に載せる（訂正時刻を優先） */
+  const corrMs=Number(h&&h.correctedAtMs);
+  if(corrMs>0)t=Math.max(t,corrMs);
+  else if(h&&h.correctedAt){
+    /* 旧データは日付のみ → その日の末として扱い、同日チェック後の訂正を取りこぼしにくくする */
+    const cp=typeof parseYMD==='function'?parseYMD(h.correctedAt):0;
+    if(cp)t=Math.max(t,cp+86400000-1);
+  }
+  return t;
 }
 function isHistIssuedAfterCheck(h){
   if(!h||!isHistDeliveryChecked(h))return false;
   const at=getSlipCheckedAt(histCheckClosing(h));
   if(!at)return false;
   return histIssuedAtMs(h)>at;
+}
+function clearSlipIssuedAck(id){
+  if(id==null)return;
+  ensureIssuedAckMap();
+  const k=String(id);
+  if(!DB.slipIssuedAckIds[k])return;
+  delete DB.slipIssuedAckIds[k];
 }
 function deliveryDateKey(h){const d=parseHistDeliveryDate(h);return d?(d.y+'/'+d.m+'/'+d.d):'';}
 function isDeliveryDateChecked(dateStr,closingDay){const through=getSlipCheckedThrough(closingDay);if(!through||!dateStr)return false;const a=parseYMD(dateStr),b=parseYMD(through);return a&&b&&a<=b;}
@@ -2005,11 +2028,13 @@ function checkCalIssuedRows(y,m,closingDay){
     const d=parseHistDeliveryDate(h);
     if(!d||d.y!==y||d.m!==m)return;
     const key=d.y+'/'+d.m+'/'+d.d;
+    const isCorr=!!(h.correctedAt||h.correctedAtMs);
     rows.push({
       id:h.id,
       client:h.client||'',
       ds:historyDeliveryDate(h)||key,
       key,
+      isCorr,
       sort:d.y*10000+d.m*100+d.d
     });
   });
@@ -2050,7 +2075,8 @@ function renderCheckIssuedList(){
   const body=rows.length
     ?rows.map(r=>{
       const id=r.id==null?'null':String(r.id);
-      return '<label class="check-issued-row is-checked"><input type="checkbox" title="確認して一覧から消す" onchange="ackCheckIssued('+id+',event)"><span class="check-issued-badge">発行あり</span><span class="check-issued-client">'+escH(r.client||'（客先なし）')+'</span><span class="check-issued-date">納品日 '+escH(r.ds)+'</span></label>';
+      const badge=r.isCorr?'訂正あり':'発行あり';
+      return '<label class="check-issued-row is-checked"><input type="checkbox" title="確認して一覧から消す" onchange="ackCheckIssued('+id+',event)"><span class="check-issued-badge">'+badge+'</span><span class="check-issued-client">'+escH(r.client||'（客先なし）')+'</span><span class="check-issued-date">納品日 '+escH(r.ds)+'</span></label>';
     }).join('')
     :'<div class="check-issued-empty">チェック済みのあとに発行した伝票はありません<br><span style="font-size:11px">一覧のチェックを入れると消えます</span></div>';
   const html=hd+body;
@@ -4194,6 +4220,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-10-26',type:'feat',text:'事務チェック「チェック後の発行」に訂正再発行も載る（訂正あり表示。消したあとも再訂正で再表示）'},
   {date:'2026-10-21',type:'feat',text:'のれんの備考寸法を数字とEnterだけで入力（数量→横→縦で120×90）'},
   {date:'2026-10-17',type:'feat',text:'漢字品目も読みで頭文字検索（例: 和帽子→わ）。読み欄（任意）で上書き可'},
   {date:'2026-10-17',type:'fix',text:'品目の頭文字絞り込みをボタン列からプルダウンに変更（場所を取らない）'},
