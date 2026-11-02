@@ -15,6 +15,12 @@ alwaysApply: true
 4. 番号なしは締め日ルールに従う（20日〆は先頭寄り、25日〆・末日〆は番号の後ろ）
 5. 末日〆の **119（SCAPES）** は番号ブロックの後ろ側のままにする
 
+## 客先名を訂正するとき
+
+- マスタの客先名変更は **`renameClientRefs`** で履歴も付け替える（請求は履歴の客先名一致）
+- すでに旧名の履歴が残っている場合は **`CLIENT_NAME_MIGRATIONS`** に `[旧名, 新名]` を追加する
+- `BILLING_STORE_NO` にも新名（必要なら旧名）を番号付きで入れておく
+
 ## 参照
 
 - 並びキー: `billingSortPos` / `sortMeisaiData` / `lookupBillingStoreNo`

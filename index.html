@@ -1019,7 +1019,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="help-section-hd" onclick="toggleHelp('data')">😱 データが消えた・おかしいとき<span class="help-toggle" id="help-toggle-data">▶</span></div>
     <div class="help-section-body">
       <p><span class="help-tag">データ</span> タブ →「⬇️ 今すぐ読み込む」を押してください。クラウドから復元できる場合がほとんどです。</p>
-      <div class="help-step"><div class="help-step-num">客先</div><div class="help-step-body"><div class="help-step-title">客先がマスタから消えたとき</div><span class="help-tag">データ</span> → <span class="help-tag">消えた客先を履歴から復元</span>。発行履歴に残っている客先名をマスタへ戻せます（品目は履歴から拾います）。</div></div>
+      <div class="help-step"><div class="help-step-num">客先</div><div class="help-step-body"><div class="help-step-title">客先がマスタから消えたとき</div><span class="help-tag">データ</span> → <span class="help-tag">消えた客先を履歴から復元</span>。発行履歴に残っている客先名をマスタへ戻せます（品目は履歴から拾います）。客先名を直すときは <span class="help-tag">マスタ管理</span> の客先名を変えて保存すると、<strong>発行履歴の客先名も一緒に付け替わります</strong>（請求に載らなくなるのを防ぐため）。</div></div>
       <div class="help-warn">⚠️ それでも解決しない場合はJSONバックアップから復元してください。</div>
     </div>
   </div>
@@ -1269,7 +1269,7 @@ function fillGrpSel(id,cur){const s=document.getElementById(id);if(!s)return;con
 function nxtDel(cyc){if(!cyc)return null;const m={月:1,火:2,水:3,木:4,金:5,土:6,日:0};const tw=new Date().getDay();let min=99;for(const c of cyc){if(m[c]!==undefined){const d=(m[c]-tw+7)%7;if(d<min)min=d;}}if(min===99)return null;const r=new Date();r.setDate(r.getDate()+min);return r;}
 function fmtD(d){if(!d)return'—';return fmtDateStr(d);}
 function nextPCode(){let max=0;DB.products.forEach(p=>{const m=p.code.match(/P(\d+)/i);if(m)max=Math.max(max,parseInt(m[1]));});Object.values(DB.clients).forEach(cl=>{(cl.items||[]).forEach(it=>{const m=it.code.match(/P(\d+)/i);if(m)max=Math.max(max,parseInt(m[1]));});});return 'P'+String(max+1).padStart(3,'0');}
-function init(){load();pruneExpiredHistory({quiet:true});pruneDeletedHistory({quiet:true});const now=new Date();document.getElementById('hdr-d').innerHTML=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${WD[now.getDay()]}曜日`;fillSel('csel');fillSel('msel');fillGrpSel('e-grp');fillGrpSel('nc-grp');renderProducts();renderHistory();renderGroups();renderClientGrpList();setNPCode();setNC2();initMeisaiMonth();updateBillingPendingBadge();syncMasterPickSortUi();renderMasterPickInitials();}
+function init(){load();applyClientNameMigrations({quiet:true});pruneExpiredHistory({quiet:true});pruneDeletedHistory({quiet:true});const now=new Date();document.getElementById('hdr-d').innerHTML=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${WD[now.getDay()]}曜日`;fillSel('csel');fillSel('msel');fillGrpSel('e-grp');fillGrpSel('nc-grp');renderProducts();renderHistory();renderGroups();renderClientGrpList();setNPCode();setNC2();initMeisaiMonth();updateBillingPendingBadge();syncMasterPickSortUi();renderMasterPickInitials();}
 function toast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.style.borderLeftColor=type==='e'?'#c0392b':'var(--ac)';t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 
 // ===== 伝票発行 =====
@@ -1774,7 +1774,9 @@ const BILLING_STORE_NO={
   '鮨　はつめ':261,'鮨　謙心':271,'比内亭はなれ':274,'やきとり　マルヒ':278,'ＡＳＡＮＯＨＡ':280,'寿司カレッジ東京':281,
   'へぎそば清兵衛':304,'ＧＣＣバグース　町田':305,'天一　町田':306,'マキア　町田店':308,
   '境木小学校':null,'中沢小学校':null,'SCAPES THE SUITE':119,'マキア　相模原店':null,
-  '喫茶室ルノアール':236,'ルノアール':236
+  '喫茶室ルノアール':236,'ルノアール':236,
+  '喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店':236,'喫茶室ルノアール新宿中央東口店':236,
+  '236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店':236,'236喫茶室ルノアール新宿中央東口店':236
 };
 const BILLING_STORE_NO_BY_KEY=(()=>{const m=new Map();Object.keys(BILLING_STORE_NO).forEach(n=>{const k=billingNameKey(n);if(k&&!m.has(k))m.set(k,BILLING_STORE_NO[n]);});return m;})();
 /** 番号なしの固定順（紙の表どおり。20日〆は先頭、25日〆・末日〆は番号の後ろ） */
@@ -3197,7 +3199,116 @@ function refreshOpenMeisaiViewerPrices(){
 }
 function renderMItems(){if(!editC)return;const items=DB.clients[editC]?.items||[];const wrap=document.getElementById('mitems');const bar=document.getElementById('mitems-save-bar');if(bar)bar.style.display='flex';if(!items.length){wrap.innerHTML='<div class="emp" style="padding:14px">品目がありません</div>';setMasterItemsDirty(masterItemsDirty);return;}wrap.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed" id="mitems-tbl"><thead><tr><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;font-weight:500;width:36px"></th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;font-weight:500;width:15%">品番</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;font-weight:500">品目名</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:right;font-weight:500;width:90px">請求単価</th><th style="background:var(--nv);color:#fff;padding:7px 10px;font-size:11px;text-align:center;font-weight:500;width:15%">操作</th></tr></thead><tbody id="mitems-body">${items.map((it,i)=>`<tr draggable="true" data-idx="${i}"><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd);text-align:center;color:var(--mu);cursor:grab;font-size:16px;user-select:none">☰</td><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd)"><input class="enter-skip" data-field="code" style="width:100%;padding:5px 8px;border:0.5px solid var(--b2);border-radius:4px;font-size:12px;background:var(--w);color:var(--tx);font-family:monospace" value="${escH(it.code||'')}" oninput="upd(${i},'code',this.value)"></td><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd)"><input class="enter-skip" data-field="name" style="width:100%;padding:5px 8px;border:0.5px solid var(--b2);border-radius:4px;font-size:13px;background:var(--w);color:var(--tx)" value="${escH(it.name||'')}" oninput="upd(${i},'name',this.value)"></td><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd)"><input data-field="price" data-enter-col="price" type="number" min="0" style="width:100%;padding:5px 8px;border:0.5px solid var(--b2);border-radius:4px;font-size:13px;background:var(--w);color:var(--tx);text-align:right" value="${it.price||''}" placeholder="0" oninput="updPrice(${i},this.value)"></td><td style="padding:6px 10px;border-bottom:0.5px solid var(--bd);text-align:center"><button style="background:transparent;color:var(--ng);border:0.5px solid var(--ng);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600" onclick="delItem(${i})">削除</button></td></tr>`).join('')}</tbody></table>`;initMItemsDrag();setMasterItemsDirty(masterItemsDirty);}
 function initMItemsDrag(){const tbody=document.getElementById('mitems-body');if(!tbody)return;let dragSrc=null;tbody.querySelectorAll('tr').forEach(row=>{row.addEventListener('dragstart',e=>{dragSrc=row;row.style.opacity='0.4';e.dataTransfer.effectAllowed='move';});row.addEventListener('dragend',e=>{row.style.opacity='';tbody.querySelectorAll('tr').forEach(r=>r.style.background='');});row.addEventListener('dragover',e=>{e.preventDefault();tbody.querySelectorAll('tr').forEach(r=>r.style.background='');if(row!==dragSrc)row.style.background='rgba(200,153,42,0.15)';});row.addEventListener('drop',e=>{e.preventDefault();if(dragSrc===row)return;flushMItemsFromDom();const fi=parseInt(dragSrc.dataset.idx);const ti=parseInt(row.dataset.idx);const items=DB.clients[editC].items;const moved=items.splice(fi,1)[0];items.splice(ti,0,moved);persist();setMasterItemsDirty(false);if(curC===editC){renderItems();updateChips();}renderMItems();toast('順番を変更しました');});});}
-function saveBasic(){if(!editC)return;const newN=document.getElementById('e-name').value.trim();const newC=document.getElementById('e-cyc').value.trim();const newG=document.getElementById('e-grp').value;const newCL=document.getElementById('e-closing').value;if(!newN){toast('客先名を入力してください','e');return;}if(newN!==editC){if(DB.clients[newN]){toast('同名の客先が既に存在します','e');return;}const oldName=editC;DB.clients[newN]=DB.clients[editC];delete DB.clients[editC];if(DB.cycles[editC]){DB.cycles[newN]=DB.cycles[editC];delete DB.cycles[editC];}if(DB.closing[editC]){DB.closing[newN]=DB.closing[editC];delete DB.closing[editC];}if(DB.minCharge&&DB.minCharge[editC]){DB.minCharge[newN]=DB.minCharge[editC];delete DB.minCharge[editC];}if(DB.deliveryFee&&DB.deliveryFee[editC]){DB.deliveryFee[newN]=DB.deliveryFee[editC];delete DB.deliveryFee[editC];}if(DB.packagingFee&&DB.packagingFee[editC]){DB.packagingFee[newN]=DB.packagingFee[editC];delete DB.packagingFee[editC];}if(DB.parkingEnabled&&DB.parkingEnabled[editC]){DB.parkingEnabled[newN]=DB.parkingEnabled[editC];delete DB.parkingEnabled[editC];}if(DB.clientGroups[editC]){DB.clientGroups[newN]=DB.clientGroups[editC];delete DB.clientGroups[editC];}Object.keys(DB.clientOrder||{}).forEach(gid=>{const ord=DB.clientOrder[gid];if(!Array.isArray(ord))return;const i=ord.indexOf(oldName);if(i>=0)ord[i]=newN;});if(curC===editC)curC=newN;editC=newN;}DB.cycles[editC]=newC;if(newCL)DB.closing[editC]=newCL;else delete DB.closing[editC];if(!DB.minCharge)DB.minCharge={};const minv=parseInt(document.getElementById('e-mincharge')?.value,10);if(!isNaN(minv)&&minv>0)DB.minCharge[editC]=minv;else delete DB.minCharge[editC];if(!DB.deliveryFee)DB.deliveryFee={};const feev=parseInt(document.getElementById('e-delivery-fee')?.value,10);if(!isNaN(feev)&&feev>0)DB.deliveryFee[editC]=feev;else delete DB.deliveryFee[editC];if(!DB.packagingFee)DB.packagingFee={};const packv=parseInt(document.getElementById('e-packaging-fee')?.value,10);if(!isNaN(packv)&&packv>0)DB.packagingFee[editC]=packv;else delete DB.packagingFee[editC];if(!DB.parkingEnabled)DB.parkingEnabled={};if(document.getElementById('e-parking-enabled')?.checked)DB.parkingEnabled[editC]=true;else delete DB.parkingEnabled[editC];if(newG)DB.clientGroups[editC]=newG;else delete DB.clientGroups[editC];flushMItemsFromDom();setMasterItemsDirty(false);persist();fillSel('csel',curC);fillSel('msel',editC);if(curC)updateChips();renderGroups();renderClientGrpList();toast('変更を保存しました');}
+/** 客先名の付け替え（マスタ＋履歴）。請求は履歴の客先名一致で拾うため必須 */
+function renameClientRefs(oldName,newName,opts){
+  const quiet=!!(opts&&opts.quiet);
+  const skipMaster=!!(opts&&opts.skipMaster);
+  if(!oldName||!newName||oldName===newName)return{master:false,hist:0};
+  let masterMoved=false;
+  let histN=0;
+  if(!skipMaster&&DB.clients[oldName]){
+    if(DB.clients[newName]){
+      const seen=new Set((DB.clients[newName].items||[]).map(it=>String(it.code||'')+'\0'+String(it.name||'')));
+      (DB.clients[oldName].items||[]).forEach(it=>{
+        const key=String(it.code||'')+'\0'+String(it.name||'');
+        if(seen.has(key))return;
+        seen.add(key);
+        DB.clients[newName].items=DB.clients[newName].items||[];
+        DB.clients[newName].items.push(it);
+      });
+      delete DB.clients[oldName];
+    }else{
+      DB.clients[newName]=DB.clients[oldName];
+      delete DB.clients[oldName];
+    }
+    const moveKey=(obj)=>{if(!obj||obj[oldName]==null)return;if(obj[newName]==null)obj[newName]=obj[oldName];delete obj[oldName];};
+    moveKey(DB.cycles);moveKey(DB.closing);moveKey(DB.minCharge);moveKey(DB.deliveryFee);moveKey(DB.packagingFee);moveKey(DB.parkingEnabled);moveKey(DB.clientGroups);
+    Object.keys(DB.clientOrder||{}).forEach(gid=>{
+      const ord=DB.clientOrder[gid];
+      if(!Array.isArray(ord))return;
+      DB.clientOrder[gid]=ord.map(c=>c===oldName?newName:c).filter((c,i,a)=>a.indexOf(c)===i);
+    });
+    if(curC===oldName)curC=newName;
+    if(editC===oldName)editC=newName;
+    masterMoved=true;
+  }
+  const touchHist=(arr,saveFn)=>{
+    (arr||[]).forEach(h=>{
+      if(!h||h.client!==oldName)return;
+      h.client=newName;
+      histN++;
+      if(typeof saveFn==='function')saveFn(h);
+    });
+  };
+  touchHist(DB.history,typeof fbSaveHistoryEntry==='function'?fbSaveHistoryEntry:null);
+  let delN=0;
+  (DB.historyDeleted||[]).forEach(log=>{
+    const slip=log&&log.slip;
+    if(!slip||slip.client!==oldName)return;
+    slip.client=newName;
+    delN++;
+    if(typeof fbSaveDeletedEntry==='function')fbSaveDeletedEntry(log);
+  });
+  if(histN)persistHistoryLocal();
+  if(delN)persistDeletedHistoryLocal();
+  if(masterMoved||histN||delN){
+    if(masterMoved)persist();
+    if(!quiet)toast('客先名を付け替えました'+(histN?'（履歴 '+histN+'件）':'')+(delN?'（削除履歴 '+delN+'件）':''));
+  }
+  return{master:masterMoved,hist:histN+delN};
+}
+/** 既知の店名訂正を起動時に履歴へ反映 */
+const CLIENT_NAME_MIGRATIONS=[
+  ['236喫茶室ルノアール新宿中央東口店','236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店']
+];
+function applyClientNameMigrations(opts){
+  const quiet=opts&&opts.quiet!==false;
+  let totalHist=0,anyMaster=false;
+  CLIENT_NAME_MIGRATIONS.forEach(([from,to])=>{
+    const r=renameClientRefs(from,to,{quiet:true});
+    totalHist+=r.hist;
+    if(r.master)anyMaster=true;
+  });
+  if(totalHist||anyMaster){
+    if(!quiet)toast('客先名の訂正を履歴に反映しました（'+totalHist+'件）');
+  }
+  return totalHist;
+}
+function saveBasic(){
+  if(!editC)return;
+  const newN=document.getElementById('e-name').value.trim();
+  const newC=document.getElementById('e-cyc').value.trim();
+  const newG=document.getElementById('e-grp').value;
+  const newCL=document.getElementById('e-closing').value;
+  if(!newN){toast('客先名を入力してください','e');return;}
+  if(newN!==editC){
+    if(DB.clients[newN]){toast('同名の客先が既に存在します','e');return;}
+    const oldName=editC;
+    renameClientRefs(oldName,newN,{quiet:true});
+    editC=newN;
+  }
+  DB.cycles[editC]=newC;
+  if(newCL)DB.closing[editC]=newCL;else delete DB.closing[editC];
+  if(!DB.minCharge)DB.minCharge={};
+  const minv=parseInt(document.getElementById('e-mincharge')?.value,10);
+  if(!isNaN(minv)&&minv>0)DB.minCharge[editC]=minv;else delete DB.minCharge[editC];
+  if(!DB.deliveryFee)DB.deliveryFee={};
+  const feev=parseInt(document.getElementById('e-delivery-fee')?.value,10);
+  if(!isNaN(feev)&&feev>0)DB.deliveryFee[editC]=feev;else delete DB.deliveryFee[editC];
+  if(!DB.packagingFee)DB.packagingFee={};
+  const packv=parseInt(document.getElementById('e-packaging-fee')?.value,10);
+  if(!isNaN(packv)&&packv>0)DB.packagingFee[editC]=packv;else delete DB.packagingFee[editC];
+  if(!DB.parkingEnabled)DB.parkingEnabled={};
+  if(document.getElementById('e-parking-enabled')?.checked)DB.parkingEnabled[editC]=true;else delete DB.parkingEnabled[editC];
+  if(newG)DB.clientGroups[editC]=newG;else delete DB.clientGroups[editC];
+  flushMItemsFromDom();
+  setMasterItemsDirty(false);
+  persist();
+  fillSel('csel',curC);fillSel('msel',editC);
+  if(curC)updateChips();
+  renderGroups();renderClientGrpList();
+  toast('変更を保存しました');
+}
 function delClient(){if(!editC){toast('客先を選択してください','e');return;}if(!confirm(`「${editC}」を削除しますか？`))return;const name=editC;delete DB.clients[name];delete DB.cycles[name];delete DB.clientGroups[name];delete DB.closing[name];if(DB.minCharge)delete DB.minCharge[name];if(DB.deliveryFee)delete DB.deliveryFee[name];if(DB.packagingFee)delete DB.packagingFee[name];if(DB.parkingEnabled)delete DB.parkingEnabled[name];Object.keys(DB.clientOrder||{}).forEach(gid=>{if(Array.isArray(DB.clientOrder[gid]))DB.clientOrder[gid]=DB.clientOrder[gid].filter(c=>c!==name);});masterItemsDirty=false;persist();if(curC===name){curC=null;document.getElementById('csel').value='';onCC();}editC=null;document.getElementById('msel').value='';document.getElementById('medit').style.display='none';const bar=document.getElementById('mitems-save-bar');if(bar)bar.style.display='none';fillSel('csel');fillSel('msel');renderGroups();renderClientGrpList();toast('削除しました');}
 function upd(i,f,v){if(DB.clients[editC]?.items[i])DB.clients[editC].items[i][f]=v.trim();persistDraft();setMasterItemsDirty(true);}
 function updPrice(i,v){
@@ -3830,11 +3941,12 @@ function fbApplyData(d,history,historyDeleted){
   localStorage.setItem('purims_v14',JSON.stringify({clients:DB.clients,cycles:DB.cycles,products:DB.products,groups:DB.groups,clientGroups:DB.clientGroups,clientOrder:DB.clientOrder,closing:DB.closing,minCharge:DB.minCharge||{},deliveryFee:DB.deliveryFee||{},packagingFee:DB.packagingFee||{},parkingEnabled:DB.parkingEnabled||{},slipCheckedThrough:DB.slipCheckedThrough||'',slipCheckedThroughByClosing:DB.slipCheckedThroughByClosing||{},slipCheckedAtByClosing:DB.slipCheckedAtByClosing||{},slipIssuedAckIds:DB.slipIssuedAckIds||{}}));
   fillSel("csel",curC);fillSel("msel",editC);fillGrpSel("e-grp");fillGrpSel("nc-grp");
   renderProducts();renderHistory();renderGroups();renderClientGrpList();
+  const migrated=applyClientNameMigrations({quiet:true});
   const pruned=pruneExpiredHistory({quiet:true});
   pruneDeletedHistory({quiet:true});
   const skipped=markOutOfScopeAsBilled();
-  if(parkFixed){clearTimeout(persist._t);persist._t=setTimeout(fbSave,2500);}
-  return {pruned,skipped};
+  if(parkFixed||migrated){clearTimeout(persist._t);persist._t=setTimeout(fbSave,2500);}
+  return {pruned,skipped,migrated};
 }
 
 // 初回・手動：onceで確実に読み込む
@@ -4221,6 +4333,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-11-02',type:'fix',text:'客先名変更時に発行履歴も付け替え。ルノアール新宿店の旧名→新名を請求に戻す'},
   {date:'2026-11-02',type:'fix',text:'請求の末日締めで236喫茶室ルノアールを店舗番号順の位置に表示（他店の並びは変更なし）'},
   {date:'2026-10-26',type:'feat',text:'事務チェック「チェック後の発行」に訂正再発行も載る（訂正あり表示。消したあとも再訂正で再表示）'},
   {date:'2026-10-21',type:'feat',text:'のれんの備考寸法を数字とEnterだけで入力（数量→横→縦で120×90）'},
