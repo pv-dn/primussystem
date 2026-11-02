@@ -1773,7 +1773,8 @@ const BILLING_STORE_NO={
   'ジンギスカン羊一':209,'比内亭　恵比寿':251,'門':252,'大豊記　恵比寿弐號房':254,'大豊記　本館':255,'大豊記　西新宿':256,
   '鮨　はつめ':261,'鮨　謙心':271,'比内亭はなれ':274,'やきとり　マルヒ':278,'ＡＳＡＮＯＨＡ':280,'寿司カレッジ東京':281,
   'へぎそば清兵衛':304,'ＧＣＣバグース　町田':305,'天一　町田':306,'マキア　町田店':308,
-  '境木小学校':null,'中沢小学校':null,'SCAPES THE SUITE':119,'マキア　相模原店':null
+  '境木小学校':null,'中沢小学校':null,'SCAPES THE SUITE':119,'マキア　相模原店':null,
+  '喫茶室ルノアール':236,'ルノアール':236
 };
 const BILLING_STORE_NO_BY_KEY=(()=>{const m=new Map();Object.keys(BILLING_STORE_NO).forEach(n=>{const k=billingNameKey(n);if(k&&!m.has(k))m.set(k,BILLING_STORE_NO[n]);});return m;})();
 /** 番号なしの固定順（紙の表どおり。20日〆は先頭、25日〆・末日〆は番号の後ろ） */
@@ -1794,29 +1795,36 @@ function lookupBillingStoreNo(name){
   if(n===1)return{found:true,no:bestNo};
   return{found:false,no:null};
 }
-/** 締め内の並びキー。番号ありは店舗番号順（119は末日の後ろ側） */
+/** 締め内の並びキー。番号ありは店舗番号の若い順（119は末日の後ろ側）。マップに無い番号付きは客先名先頭の数字で並べる */
 function billingSortPos(name,closingDay){
   const hit=lookupBillingStoreNo(name);
   const k=billingNameKey(name);
   const unRank=BILLING_UNNUMBERED_RANK.has(k)?BILLING_UNNUMBERED_RANK.get(k):50;
+  const nameNum=clientNameSortKey(name);
+  const fallbackNum=()=>{
+    if(nameNum.hasNum&&nameNum.num===119)return 11000;
+    if(nameNum.hasNum)return nameNum.num;
+    return 20000;
+  };
   if(closingDay===20){
     if(hit.found&&hit.no==null)return unRank;
     if(hit.found)return 1000+(hit.no||0);
+    if(nameNum.hasNum)return 1000+nameNum.num;
     return 5000;
   }
   if(closingDay===25){
     if(hit.found&&hit.no!=null)return hit.no;
     if(hit.found&&hit.no==null)return 10000+unRank;
-    return 20000;
+    return fallbackNum();
   }
-  /* 末日〆: 番号 → 小学校 → 119 → マキア相模原 */
+  /* 末日〆: 店舗番号の昇順 → 番号なし（小学校など） → 119 → マキア相模原 */
   if(hit.found&&hit.no!=null&&hit.no!==119)return hit.no;
   if(hit.found&&hit.no==null){
     if(k.includes('マキア')&&k.includes('相模原'))return 12000;
     return 10000+unRank;
   }
   if(hit.found&&hit.no===119)return 11000;
-  return 20000;
+  return fallbackNum();
 }
 function sortMeisaiData(meisaiData){
   (meisaiData||[]).sort((a,b)=>{
@@ -4220,6 +4228,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-11-02',type:'fix',text:'請求の末日締めを店舗番号の昇順に。236喫茶室ルノアールなどが末尾に落ちないようにした'},
   {date:'2026-10-26',type:'feat',text:'事務チェック「チェック後の発行」に訂正再発行も載る（訂正あり表示。消したあとも再訂正で再表示）'},
   {date:'2026-10-21',type:'feat',text:'のれんの備考寸法を数字とEnterだけで入力（数量→横→縦で120×90）'},
   {date:'2026-10-17',type:'feat',text:'漢字品目も読みで頭文字検索（例: 和帽子→わ）。読み欄（任意）で上書き可'},
