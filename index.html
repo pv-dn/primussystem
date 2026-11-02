@@ -912,6 +912,10 @@ select.cs:focus{outline:none;border-color:var(--ac)}
           <div style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;font-weight:700;background:#fce8e6;color:#a32d2d">復元</div>
           <div><div>消えた客先を履歴から復元</div><div style="font-size:11px;color:var(--mu);margin-top:2px">発行履歴にあるのにマスタにない客先を戻す</div></div>
         </button>
+        <button type="button" onclick="fixRenoirClientName({force:true})" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:0.5px solid var(--b2);border-radius:8px;cursor:pointer;background:var(--w);color:var(--tx);font-size:13px;font-weight:500;text-align:left">
+          <div style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;font-weight:700;background:#faeeda;color:#854f0b">店名</div>
+          <div><div>ルノアール店名を履歴に付け替え</div><div style="font-size:11px;color:var(--mu);margin-top:2px">旧「中央東口」→新「３丁目Ｔ＆Ｔ」へ（請求に戻す）</div></div>
+        </button>
       </div>
     </div>
     <div style="background:var(--w);border:0.5px solid var(--b2);border-radius:10px;overflow:hidden">
@@ -3257,10 +3261,102 @@ function renameClientRefs(oldName,newName,opts){
   }
   return{master:masterMoved,hist:histN+delN};
 }
-/** 既知の店名訂正を起動時に履歴へ反映 */
+/** 既知の店名訂正（完全一致＋ゆれ吸収） */
 const CLIENT_NAME_MIGRATIONS=[
-  ['236喫茶室ルノアール新宿中央東口店','236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店']
+  ['236喫茶室ルノアール新宿中央東口店','236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店'],
+  ['236 喫茶室ルノアール新宿中央東口店','236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店']
 ];
+const RENOIR_NEW_CANON='236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店';
+function clientNameNorm(s){
+  return String(s||'').normalize('NFKC').replace(/[\s　]/g,'').toLowerCase().replace(/&/g,'＆');
+}
+function isRenoirOldName(name){
+  const k=clientNameNorm(name);
+  if(!k.includes('ルノアール'))return false;
+  if(k.includes('中央東口'))return true;
+  return CLIENT_NAME_MIGRATIONS.some(([from])=>clientNameNorm(from)===k);
+}
+function isRenoirNewName(name){
+  const k=clientNameNorm(name);
+  if(!k.includes('ルノアール'))return false;
+  return k.includes('ｔ＆ｔ')||k.includes('3丁目')||k.includes('３丁目');
+}
+function resolveRenoirTargetName(){
+  const keys=Object.keys(DB.clients||{});
+  const hit=keys.find(isRenoirNewName);
+  if(hit)return hit;
+  const byNorm=keys.find(k=>clientNameNorm(k)===clientNameNorm(RENOIR_NEW_CANON));
+  return byNorm||RENOIR_NEW_CANON;
+}
+function collectRenoirOldNames(target){
+  const names=new Set();
+  const consider=n=>{
+    if(!n||n===target)return;
+    if(isRenoirOldName(n))names.add(n);
+    CLIENT_NAME_MIGRATIONS.forEach(([from])=>{if(n===from)names.add(n);});
+  };
+  Object.keys(DB.clients||{}).forEach(consider);
+  (DB.history||[]).forEach(h=>consider(h&&h.client));
+  (DB.historyDeleted||[]).forEach(log=>consider(log&&log.slip&&log.slip.client));
+  return[...names];
+}
+/** ルノアール店名を履歴・マスタに付け替え（請求復活用） */
+function fixRenoirClientName(opts){
+  const force=!!(opts&&opts.force);
+  const quiet=!!(opts&&opts.quiet)&&!force;
+  const target=resolveRenoirTargetName();
+  const froms=collectRenoirOldNames(target);
+  /* マスタに新名が無いのに履歴だけ旧名、という場合も新名キーを用意 */
+  if(!DB.clients[target]){
+    const oldInMaster=froms.find(n=>DB.clients[n]);
+    if(oldInMaster){
+      renameClientRefs(oldInMaster,target,{quiet:true});
+    }else if(froms.length){
+      /* 履歴のみ旧名 → 空マスタを作らず、履歴を新名に寄せてから復元相当 */
+      DB.clients[target]={items:[]};
+      const seen=new Set();
+      (DB.history||[]).filter(h=>froms.includes(h.client)).forEach(h=>{
+        (h.items||[]).forEach(it=>{
+          const key=String(it.code||'')+'\0'+String(it.name||'');
+          if(seen.has(key))return;
+          seen.add(key);
+          DB.clients[target].items.push({code:it.code||'P000',name:it.name||''});
+        });
+      });
+      if(!DB.closing)DB.closing={};
+      if(!DB.closing[target])DB.closing[target]='末日〆';
+      persist();
+    }
+  }
+  let total=0;
+  const still=collectRenoirOldNames(target);
+  still.forEach(from=>{
+    const r=renameClientRefs(from,target,{quiet:true});
+    total+=r.hist;
+  });
+  /* 正規化一致の取りこぼし（空白差など）をもう一度 */
+  (DB.history||[]).forEach(h=>{
+    if(!h||!h.client||h.client===target)return;
+    if(!isRenoirOldName(h.client)&&clientNameNorm(h.client)!==clientNameNorm('236喫茶室ルノアール新宿中央東口店'))return;
+    h.client=target;
+    total++;
+    if(typeof fbSaveHistoryEntry==='function')fbSaveHistoryEntry(h);
+  });
+  if(total)persistHistoryLocal();
+  fillSel('csel',curC);fillSel('msel',editC);
+  renderHistory();renderGroups();renderClientGrpList();
+  updateBillingPendingBadge();
+  if(force||!quiet){
+    if(total)toast('ルノアールを「'+target+'」に付け替えました（履歴 '+total+'件）。請求を開き直してください');
+    else{
+      const histSample=(DB.history||[]).filter(h=>/ルノアール/.test(String(h.client||''))).map(h=>h.client);
+      const uniq=[...new Set(histSample)].slice(0,5);
+      const masterHit=Object.keys(DB.clients||{}).filter(n=>/ルノアール/.test(n));
+      toast('付け替え対象なし。マスタ: '+(masterHit.join(' / ')||'なし')+' ／ 履歴: '+(uniq.join(' / ')||'なし'), uniq.length||masterHit.length?'':'e');
+    }
+  }
+  return total;
+}
 function applyClientNameMigrations(opts){
   const quiet=opts&&opts.quiet!==false;
   let totalHist=0,anyMaster=false;
@@ -3269,9 +3365,8 @@ function applyClientNameMigrations(opts){
     totalHist+=r.hist;
     if(r.master)anyMaster=true;
   });
-  if(totalHist||anyMaster){
-    if(!quiet)toast('客先名の訂正を履歴に反映しました（'+totalHist+'件）');
-  }
+  totalHist+=fixRenoirClientName({quiet:true});
+  if((totalHist||anyMaster)&&!quiet)toast('客先名の訂正を履歴に反映しました（'+totalHist+'件）');
   return totalHist;
 }
 function saveBasic(){
@@ -4333,6 +4428,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-11-02',type:'fix',text:'ルノアール店名の付け替えを強化（空白ゆれ対応）。データタブから手動実行可'},
   {date:'2026-11-02',type:'fix',text:'客先名変更時に発行履歴も付け替え。ルノアール新宿店の旧名→新名を請求に戻す'},
   {date:'2026-11-02',type:'fix',text:'請求の末日締めで236喫茶室ルノアールを店舗番号順の位置に表示（他店の並びは変更なし）'},
   {date:'2026-10-26',type:'feat',text:'事務チェック「チェック後の発行」に訂正再発行も載る（訂正あり表示。消したあとも再訂正で再表示）'},
