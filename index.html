@@ -1780,7 +1780,8 @@ const BILLING_STORE_NO={
   '境木小学校':null,'中沢小学校':null,'SCAPES THE SUITE':119,'マキア　相模原店':null,
   '喫茶室ルノアール':236,'ルノアール':236,
   '喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店':236,'喫茶室ルノアール新宿中央東口店':236,
-  '236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店':236,'236喫茶室ルノアール新宿中央東口店':236
+  '236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店':236,'236喫茶室ルノアール新宿中央東口店':236,
+  '236 喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店':236,'236 喫茶室ルノアール新宿中央東口店':236
 };
 const BILLING_STORE_NO_BY_KEY=(()=>{const m=new Map();Object.keys(BILLING_STORE_NO).forEach(n=>{const k=billingNameKey(n);if(k&&!m.has(k))m.set(k,BILLING_STORE_NO[n]);});return m;})();
 /** 番号なしの固定順（紙の表どおり。20日〆は先頭、25日〆・末日〆は番号の後ろ） */
@@ -3261,12 +3262,13 @@ function renameClientRefs(oldName,newName,opts){
   }
   return{master:masterMoved,hist:histN+delN};
 }
-/** 既知の店名訂正（完全一致＋ゆれ吸収） */
+/** 既知の店名訂正（完全一致＋ゆれ吸収）。正式は「236」と店名の間に半角スペース */
 const CLIENT_NAME_MIGRATIONS=[
-  ['236喫茶室ルノアール新宿中央東口店','236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店'],
-  ['236 喫茶室ルノアール新宿中央東口店','236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店']
+  ['236 喫茶室ルノアール新宿中央東口店','236 喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店'],
+  ['236喫茶室ルノアール新宿中央東口店','236 喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店'],
+  ['236　喫茶室ルノアール新宿中央東口店','236 喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店']
 ];
-const RENOIR_NEW_CANON='236喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店';
+const RENOIR_NEW_CANON='236 喫茶室ルノアール新宿３丁目Ｔ＆Ｔビル店';
 function clientNameNorm(s){
   return String(s||'').normalize('NFKC').replace(/[\s　]/g,'').toLowerCase().replace(/&/g,'＆');
 }
@@ -3279,10 +3281,11 @@ function isRenoirOldName(name){
 function isRenoirNewName(name){
   const k=clientNameNorm(name);
   if(!k.includes('ルノアール'))return false;
-  return k.includes('ｔ＆ｔ')||k.includes('3丁目')||k.includes('３丁目');
+  return k.includes('ｔ＆ｔ')||(k.includes('3丁目')&&!k.includes('中央東口'))||(k.includes('３丁目')&&!k.includes('中央東口'));
 }
 function resolveRenoirTargetName(){
   const keys=Object.keys(DB.clients||{});
+  /* マスタにある実名を優先（半角スペースあり／なしのゆれ吸収） */
   const hit=keys.find(isRenoirNewName);
   if(hit)return hit;
   const byNorm=keys.find(k=>clientNameNorm(k)===clientNameNorm(RENOIR_NEW_CANON));
@@ -3337,7 +3340,7 @@ function fixRenoirClientName(opts){
   /* 正規化一致の取りこぼし（空白差など）をもう一度 */
   (DB.history||[]).forEach(h=>{
     if(!h||!h.client||h.client===target)return;
-    if(!isRenoirOldName(h.client)&&clientNameNorm(h.client)!==clientNameNorm('236喫茶室ルノアール新宿中央東口店'))return;
+    if(!isRenoirOldName(h.client)&&clientNameNorm(h.client)!==clientNameNorm('236 喫茶室ルノアール新宿中央東口店'))return;
     h.client=target;
     total++;
     if(typeof fbSaveHistoryEntry==='function')fbSaveHistoryEntry(h);
