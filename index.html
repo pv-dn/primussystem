@@ -1795,36 +1795,29 @@ function lookupBillingStoreNo(name){
   if(n===1)return{found:true,no:bestNo};
   return{found:false,no:null};
 }
-/** 締め内の並びキー。番号ありは店舗番号の若い順（119は末日の後ろ側）。マップに無い番号付きは客先名先頭の数字で並べる */
+/** 締め内の並びキー。番号ありは店舗番号順（119は末日の後ろ側）。新規客先は BILLING_STORE_NO に番号を足す */
 function billingSortPos(name,closingDay){
   const hit=lookupBillingStoreNo(name);
   const k=billingNameKey(name);
   const unRank=BILLING_UNNUMBERED_RANK.has(k)?BILLING_UNNUMBERED_RANK.get(k):50;
-  const nameNum=clientNameSortKey(name);
-  const fallbackNum=()=>{
-    if(nameNum.hasNum&&nameNum.num===119)return 11000;
-    if(nameNum.hasNum)return nameNum.num;
-    return 20000;
-  };
   if(closingDay===20){
     if(hit.found&&hit.no==null)return unRank;
     if(hit.found)return 1000+(hit.no||0);
-    if(nameNum.hasNum)return 1000+nameNum.num;
     return 5000;
   }
   if(closingDay===25){
     if(hit.found&&hit.no!=null)return hit.no;
     if(hit.found&&hit.no==null)return 10000+unRank;
-    return fallbackNum();
+    return 20000;
   }
-  /* 末日〆: 店舗番号の昇順 → 番号なし（小学校など） → 119 → マキア相模原 */
+  /* 末日〆: 番号 → 小学校 → 119 → マキア相模原 */
   if(hit.found&&hit.no!=null&&hit.no!==119)return hit.no;
   if(hit.found&&hit.no==null){
     if(k.includes('マキア')&&k.includes('相模原'))return 12000;
     return 10000+unRank;
   }
   if(hit.found&&hit.no===119)return 11000;
-  return fallbackNum();
+  return 20000;
 }
 function sortMeisaiData(meisaiData){
   (meisaiData||[]).sort((a,b)=>{
@@ -4228,7 +4221,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
-  {date:'2026-11-02',type:'fix',text:'請求の末日締めを店舗番号の昇順に。236喫茶室ルノアールなどが末尾に落ちないようにした'},
+  {date:'2026-11-02',type:'fix',text:'請求の末日締めで236喫茶室ルノアールを店舗番号順の位置に表示（他店の並びは変更なし）'},
   {date:'2026-10-26',type:'feat',text:'事務チェック「チェック後の発行」に訂正再発行も載る（訂正あり表示。消したあとも再訂正で再表示）'},
   {date:'2026-10-21',type:'feat',text:'のれんの備考寸法を数字とEnterだけで入力（数量→横→縦で120×90）'},
   {date:'2026-10-17',type:'feat',text:'漢字品目も読みで頭文字検索（例: 和帽子→わ）。読み欄（任意）で上書き可'},
