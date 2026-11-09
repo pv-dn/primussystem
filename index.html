@@ -970,7 +970,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
       <div class="help-note">💡 印刷面は左右2枚。左は「委託洗濯伝票」、右だけ「委託洗濯伝票　(納品控)」です。</div>
       <div class="help-step"><div class="help-step-num">事務</div><div class="help-step-body"><div class="help-step-title">発行伝票のチェック済み</div><span class="help-tag">請求</span> タブでまず<strong>締め日</strong>（20日〆／25日〆／末日〆）を選び、ミニカレンダー（または請求明細書ビューア左上）の<strong>納品日</strong>をクリックすると、その締めのその日以前を事務確認済みとして記録します。チェック済みは締め日ごとに別管理。「○○〆 チェック済み: 納品日 ○○まで」と表示。カレンダー左側の一覧は、<strong>チェック済みにしたあと</strong>の<strong>新規発行</strong>と<strong>訂正再発行</strong>を<strong>発行あり／訂正あり・客先名・納品日</strong>で出します（事務が把握するため）。行のチェックを入れると一覧から消えます（<span class="help-tag">表示中を消す</span>でまとめても消せます）。同じ客先・納品日で新規発行しようとしたとき、チェック済み期間なら警告文にその旨が出ます。</div></div>
       <div class="help-note">💡 <strong>Enter</strong>：数量は次の数量へ、請求単価は次の単価へ（列の縦移動）。品番・備考は通常スキップ（必要なときだけクリック）。<strong>のれん</strong>だけ例外で、数量→備考へ進み、備考は<strong>数字と Enter だけ</strong>（横の数字 → Enter → 縦の数字 → Enter）で <code>120×90</code> の形になります。</div>
-      <div class="help-note">💡 データはクラウド（Firebase）に自動保存されます。別のPCで開いても同じデータが表示されます。</div>
+      <div class="help-note">💡 データはクラウド（Firebase）に自動保存されます。別のPCで開いても同じデータが表示されます。伝票発行の履歴はまずこのPCに残り、続けてクラウドへ送ります（通信が悪いときは再送します）。</div>
       <div class="help-note">💡 <strong>発行履歴の保存期間は6か月</strong>です（納品日基準）。6か月を超えた伝票はアプリ起動・クラウド読み込み時に自動削除されます。必要な分は事前にCSV/請求Excelで保存してください。伝票を<strong>削除</strong>・<strong>発行取消</strong>・期間超過で消したときは、<span class="help-tag">発行履歴</span> の <span class="help-tag">削除履歴</span> タブに記録が残ります（12か月）。誤削除なら「履歴に戻す」で復元できます。</div>
     </div>
   </div>
@@ -1690,7 +1690,7 @@ function showPrev(){
     clearSlipIssuedAck(correctingHist.id);
     lastSlip={client:correctingHist.client,date:correctingHist.date,deliveryDate:ds,items:allItems,total:totalPts,issuedBy:correctingHist.issuedBy||''};
     histId=correctingHist.id;
-    persistHistoryLocal();
+    try{persistHistoryLocal();}catch(e){toast('履歴のローカル保存に失敗しました','e');return;}
     persist();
     renderHistory();
     fbSaveHistoryEntry(correctingHist);
@@ -1702,7 +1702,7 @@ function showPrev(){
     lastSlip={client:curC,date:recDate,deliveryDate:ds,items:allItems,total:totalPts,issuedBy:currentUser?currentUser.username:''};
     const entry={...lastSlip,id:histId};
     DB.history.unshift(entry);
-    persistHistoryLocal();
+    try{persistHistoryLocal();}catch(e){toast('履歴のローカル保存に失敗しました','e');return;}
     renderHistory();
     fbSaveHistoryEntry(entry);
   }
@@ -3824,6 +3824,8 @@ function helpExpandAll(){['daily','basic','master','billing','print','data'].for
 // ===== Firebase連携 =====
 const db=firebase.database();
 let _isSelfSaving=false;
+/** クラウド保存中の履歴（リスナーの丸ごと上書きから守る） */
+const _pendingHistSaves=new Map();
 function markSelfSaving(){
   const tok='t'+(Date.now())+'_'+Math.random().toString(36).slice(2,7);
   _selfSaveTokens.add(tok);
@@ -3836,6 +3838,25 @@ function clearSelfSaving(tok){
 }
 function histPath(id){return 'purims/history/'+String(id);}
 function histDeletedPath(id){return 'purims/historyDeleted/'+String(id);}
+/** クラウド履歴 + 保存中ローカル件をマージ（発行直後の欠落防止） */
+function mergeHistoryFromCloud(remoteRaw){
+  const remote=parseHistory(remoteRaw);
+  const byId=new Map();
+  remote.forEach(h=>{
+    if(!h||h.id==null||h.id==='')return;
+    byId.set(String(h.id),h);
+  });
+  _pendingHistSaves.forEach((entry,id)=>{
+    if(!entry)return;
+    byId.set(String(id),Object.assign({},entry,{id:String(id)}));
+  });
+  return[...byId.values()].sort((a,b)=>String(b.id).localeCompare(String(a.id),'en'));
+}
+function flushPendingHistSaves(){
+  if(!_pendingHistSaves.size||!currentUser)return;
+  const list=[..._pendingHistSaves.values()];
+  list.forEach(entry=>fbSaveHistoryEntry(entry,{attempt:0,silentRetry:true}));
+}
 
 /** Firebase は undefined を拒否するため、保存前に除去する */
 function sanitizeForFirebase(obj){
@@ -3932,13 +3953,39 @@ function fbSave(){
   .finally(()=>setTimeout(()=>clearSelfSaving(tok),800));
 }
 
-function fbSaveHistoryEntry(entry){
-  if(!currentUser||!entry||entry.id==null||entry.id==='')return;
+function fbSaveHistoryEntry(entry,opts){
+  if(!entry||entry.id==null||entry.id==='')return Promise.resolve();
+  const id=String(entry.id);
+  const attempt=Number(opts&&opts.attempt)||0;
+  const silentRetry=!!(opts&&opts.silentRetry);
+  const localCopy=Object.assign({},entry,{id});
+  _pendingHistSaves.set(id,localCopy);
+  try{persistHistoryLocal();}catch(e){}
+  if(!currentUser){
+    if(!attempt)toast('履歴はこのPCに保存しました（ログイン後にクラウドへ送ります）');
+    return Promise.resolve();
+  }
   const tok=markSelfSaving();
-  const saved=sanitizeForFirebase(Object.assign({},entry,{id:String(entry.id)}));
-  db.ref(histPath(saved.id)).set(saved)
-    .catch(e=>toast('履歴保存失敗: '+e.message,'e'))
-    .finally(()=>setTimeout(()=>clearSelfSaving(tok),800));
+  let saved;
+  try{
+    saved=sanitizeForFirebase(Object.assign({},localCopy));
+  }catch(e){
+    clearSelfSaving(tok);
+    toast('履歴の保存準備に失敗しました','e');
+    return Promise.reject(e);
+  }
+  return db.ref(histPath(id)).set(saved)
+    .then(()=>{
+      _pendingHistSaves.delete(id);
+    })
+    .catch(e=>{
+      if(attempt<2){
+        if(!silentRetry)toast('履歴のクラウド保存を再送します…');
+        return new Promise(r=>setTimeout(r,400+attempt*600)).then(()=>fbSaveHistoryEntry(localCopy,{attempt:attempt+1,silentRetry}));
+      }
+      toast('履歴のクラウド保存に失敗しました。このPCには残っています','e');
+    })
+    .finally(()=>clearSelfSaving(tok));
 }
 function fbSaveDeletedEntry(log){
   if(!currentUser||!log||log.id==null||log.id==='')return;
@@ -4030,7 +4077,7 @@ function fbApplyData(d,history,historyDeleted){
   DB.clientOrder=d.clientOrder||{};DB.closing=d.closing||{};DB.minCharge=d.minCharge||{};DB.deliveryFee=d.deliveryFee||{};DB.packagingFee=d.packagingFee||{};DB.parkingEnabled=d.parkingEnabled||{};DB.slipCheckedThrough=d.slipCheckedThrough||'';DB.slipCheckedThroughByClosing=d.slipCheckedThroughByClosing||{};DB.slipCheckedAtByClosing=d.slipCheckedAtByClosing||{};DB.slipIssuedAckIds=d.slipIssuedAckIds||{};
   const parkFixed=ensurePaperParkingFlags();
   _lastAppliedSavedAt=d.savedAt||null;
-  DB.history=parseHistory(history);
+  DB.history=mergeHistoryFromCloud(history);
   persistHistoryLocal();
   if(historyDeleted!==undefined){
     DB.historyDeleted=parseDeletedHistory(historyDeleted);
@@ -4043,6 +4090,7 @@ function fbApplyData(d,history,historyDeleted){
   const pruned=pruneExpiredHistory({quiet:true});
   pruneDeletedHistory({quiet:true});
   const skipped=markOutOfScopeAsBilled();
+  flushPendingHistSaves();
   if(parkFixed||migrated){clearTimeout(persist._t);persist._t=setTimeout(fbSave,2500);}
   return {pruned,skipped,migrated};
 }
@@ -4092,8 +4140,7 @@ function fbStartListeners(){
   });
   const onHist=refHist.on("value",snap=>{
     if(skipHist||_isSelfSaving)return;
-    const hist=parseHistory(snap.val());
-    DB.history=hist;
+    DB.history=mergeHistoryFromCloud(snap.val());
     pruneExpiredHistory({quiet:true});
     persistHistoryLocal();
     renderHistory();
@@ -4431,6 +4478,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-11-09',type:'fix',text:'伝票発行直後に履歴が消えることがある不具合を修正（クラウド同期の競合対策・再送）'},
   {date:'2026-11-02',type:'fix',text:'ルノアール店名の付け替えを強化（空白ゆれ対応）。データタブから手動実行可'},
   {date:'2026-11-02',type:'fix',text:'客先名変更時に発行履歴も付け替え。ルノアール新宿店の旧名→新名を請求に戻す'},
   {date:'2026-11-02',type:'fix',text:'請求の末日締めで236喫茶室ルノアールを店舗番号順の位置に表示（他店の並びは変更なし）'},
