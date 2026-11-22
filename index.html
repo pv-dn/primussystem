@@ -578,7 +578,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
           <button class="btn" style="padding:5px 12px;font-size:12px" onclick="resetQ()">数量クリア</button>
           <button class="btn acc" style="padding:5px 12px;font-size:12px" onclick="toggleAddArea()">＋ 品目を追加</button>
           <button class="btn" id="skip-client-btn-top" style="display:none;padding:5px 12px;font-size:12px" onclick="skipCurrentClient()"></button>
-          <button class="btn pri" style="padding:5px 12px;font-size:12px" onclick="showPrev()">伝票発行</button>
+          <button class="btn pri" style="padding:5px 12px;font-size:12px" onclick="showPrev()" title="テンキーの＋でも発行">伝票発行 (+)</button>
         </div>
       </div>
       <div class="cb" style="background:var(--w,#fff);border-bottom:1px solid var(--bd);padding-bottom:10px;flex-shrink:0">
@@ -643,7 +643,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
         <button class="btn" onclick="resetQ()">数量クリア</button>
         <button class="btn acc" onclick="toggleAddArea()">＋ 品目を追加</button>
         <button class="btn" id="skip-client-btn-bottom" style="display:none" onclick="skipCurrentClient()"></button>
-        <button class="btn pri" onclick="showPrev()">伝票発行</button>
+        <button class="btn pri" onclick="showPrev()" title="テンキーの＋でも発行">伝票発行 (+)</button>
       </div>
     </div>
   </div>
@@ -1637,8 +1637,8 @@ function showPrev(){
   const nextBtn=document.getElementById('next-client-btn');
   if(nextBtn){
     const next=getNextClient();
-    if(next){nextBtn.textContent='▶ '+next;nextBtn.style.display='inline-block';}
-    else{nextBtn.textContent='客先選択に戻る';nextBtn.style.display='inline-block';}
+    if(next){nextBtn.textContent='▶ '+next+' (-)';nextBtn.title='テンキーの－でも次へ';nextBtn.style.display='inline-block';}
+    else{nextBtn.textContent='客先選択に戻る (-)';nextBtn.title='テンキーの－でも戻る';nextBtn.style.display='inline-block';}
   }
   updateSkipButtons();
   let queued=false;
@@ -4518,6 +4518,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-11-22',type:'feat',text:'伝票発行・次の客先ボタンにテンキー案内（+)(-)を表示'},
   {date:'2026-11-22',type:'feat',text:'発行後の「次の客先へ」をテンキーの－でも実行できるようにした'},
   {date:'2026-11-22',type:'feat',text:'伝票発行をテンキーの＋でも実行できるようにした'},
   {date:'2026-11-09',type:'fix',text:'伝票発行直後に履歴が消えることがある不具合を修正（クラウド同期の競合対策・再送）'},
