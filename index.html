@@ -962,7 +962,7 @@ select.cs:focus{outline:none;border-color:var(--ac)}
     <div class="help-section-body">
       <div class="help-step"><div class="help-step-num">1</div><div class="help-step-body"><div class="help-step-title">印刷モードを選ぶ</div>画面上部の「🖨 印刷モード」バーで <span class="help-tag">1件ずつ印刷</span> か <span class="help-tag">一括印刷</span> を選びます。</div></div>
       <div class="help-step"><div class="help-step-num">2</div><div class="help-step-body"><div class="help-step-title">客先をプルダウンで選ぶ</div>「客先を選択してください」から届け先を選びます。</div></div>
-      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">数量を入力して伝票発行</div>品目一覧に数量を入力し、<span class="help-tag">伝票発行</span>ボタンを押します。発行しない客先は <span class="help-tag">⏭ 飛ばす</span> で次の客先へ進めます（リストから選び直す必要はありません）。</div></div>
+      <div class="help-step"><div class="help-step-num">3</div><div class="help-step-body"><div class="help-step-title">数量を入力して伝票発行</div>品目一覧に数量を入力し、<span class="help-tag">伝票発行</span>ボタンを押します。テンキーの <strong>＋</strong> でも同じです。発行しない客先は <span class="help-tag">⏭ 飛ばす</span> で次の客先へ進めます（リストから選び直す必要はありません）。</div></div>
       <div class="help-step"><div class="help-step-num">4</div><div class="help-step-body"><div class="help-step-title">次の客先へ</div>発行後は <span class="help-tag">▶ 客先名</span> で次へ。<span class="help-tag">客先選択に戻る</span> はリストの先頭からやり直すとき。</div></div>
       <div class="help-step"><div class="help-step-num">5</div><div class="help-step-body"><div class="help-step-title">間違えたとき</div>発行した伝票は完了画面から取り消せません（印刷後に履歴が消えるのを防ぐため）。数量を直すときは <span class="help-tag">発行履歴</span> を開き <span class="help-tag">訂正して再発行</span>。不要な伝票は履歴の <span class="help-tag">削除</span>（削除履歴に残ります）。</div></div>
       <div class="help-step"><div class="help-step-num">注意</div><div class="help-step-body"><div class="help-step-title">同じ納品日の再打ち込みは不可</div>同じ客先・同じ納品日の伝票が既にあると、<strong>新規の打ち直し発行はできません</strong>。警告から案内どおり <span class="help-tag">発行履歴</span> → <span class="help-tag">訂正して再発行</span> で数量を直します。訂正すると履歴に「訂正再発行」と日時が残ります。</div></div>
@@ -2994,7 +2994,30 @@ async function exportMeisaiSummaryXlsx(){
     toast(`${rows.length}店舗の請求額一覧Excelを出力しました`);
   }catch(e){toast('Excel出力に失敗しました: '+e.message,'e');}
 }
+function canIssueByNumpadPlus(){
+  const ls=document.getElementById('login-screen');
+  if(ls&&ls.style.display!=='none')return false;
+  const slip=document.getElementById('panel-slip');
+  if(!slip||!slip.classList.contains('on'))return false;
+  const input=document.getElementById('input-view');
+  if(!input||input.style.display==='none')return false;
+  const complete=document.getElementById('complete-view');
+  if(complete&&complete.style.display==='block')return false;
+  if(document.getElementById('meisai-viewer')?.classList.contains('open'))return false;
+  if(document.getElementById('updates-modal')?.classList.contains('open'))return false;
+  return true;
+}
 document.addEventListener('keydown',e=>{
+  // テンキーの + → 伝票発行と同じ（数量入力中でも可）
+  if(e.code==='NumpadAdd'&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
+    if(canIssueByNumpadPlus()){
+      e.preventDefault();
+      const t=e.target;
+      if(t&&typeof t.blur==='function')t.blur();
+      showPrev();
+      return;
+    }
+  }
   if(e.key==='Enter'&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
     const t=e.target;
     if(t&&(t.id==='login-pass'||t.id==='admin-pass-input'))return;
@@ -4478,6 +4501,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-11-22',type:'feat',text:'伝票発行をテンキーの＋でも実行できるようにした'},
   {date:'2026-11-09',type:'fix',text:'伝票発行直後に履歴が消えることがある不具合を修正（クラウド同期の競合対策・再送）'},
   {date:'2026-11-02',type:'fix',text:'ルノアール店名の付け替えを強化（空白ゆれ対応）。データタブから手動実行可'},
   {date:'2026-11-02',type:'fix',text:'客先名変更時に発行履歴も付け替え。ルノアール新宿店の旧名→新名を請求に戻す'},
