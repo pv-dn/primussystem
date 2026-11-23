@@ -2996,29 +2996,40 @@ async function exportMeisaiSummaryXlsx(){
 }
 function isSlipPanelActive(){
   const ls=document.getElementById('login-screen');
-  if(ls&&ls.style.display!=='none')return false;
+  /* ログイン画面は class="hidden" で消す（inline の display ではない） */
+  if(ls&&!ls.classList.contains('hidden'))return false;
   const slip=document.getElementById('panel-slip');
   if(!slip||!slip.classList.contains('on'))return false;
   if(document.getElementById('meisai-viewer')?.classList.contains('open'))return false;
   if(document.getElementById('updates-modal')?.classList.contains('open'))return false;
   return true;
 }
+function isCompleteViewShowing(){
+  const complete=document.getElementById('complete-view');
+  const input=document.getElementById('input-view');
+  if(input&&input.style.display==='none')return true;
+  if(!complete)return false;
+  const d=complete.style.display;
+  return d==='block'||d==='flex';
+}
 function canIssueByNumpadPlus(){
   if(!isSlipPanelActive())return false;
+  if(isCompleteViewShowing())return false;
   const input=document.getElementById('input-view');
-  if(!input||input.style.display==='none')return false;
-  const complete=document.getElementById('complete-view');
-  if(complete&&complete.style.display==='block')return false;
-  return true;
+  return !!(input&&input.style.display!=='none');
 }
 function canNextClientByNumpadMinus(){
-  if(!isSlipPanelActive())return false;
-  const complete=document.getElementById('complete-view');
-  return !!(complete&&complete.style.display==='block');
+  return isSlipPanelActive()&&isCompleteViewShowing();
+}
+function isNumpadAddKey(e){
+  return e.code==='NumpadAdd'||e.key==='Add'||(e.key==='+'&&e.location===3);
+}
+function isNumpadSubtractKey(e){
+  return e.code==='NumpadSubtract'||e.key==='Subtract'||((e.key==='-'||e.key==='−')&&e.location===3);
 }
 document.addEventListener('keydown',e=>{
   // テンキーの + → 伝票発行と同じ（数量入力中でも可）
-  if(e.code==='NumpadAdd'&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
+  if(isNumpadAddKey(e)&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
     if(canIssueByNumpadPlus()){
       e.preventDefault();
       const t=e.target;
@@ -3028,7 +3039,7 @@ document.addEventListener('keydown',e=>{
     }
   }
   // テンキーの - → 発行後の「次の客先へ」と同じ
-  if(e.code==='NumpadSubtract'&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
+  if(isNumpadSubtractKey(e)&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
     if(canNextClientByNumpadMinus()){
       e.preventDefault();
       goNextOrSelect();
@@ -4518,6 +4529,7 @@ function closeLoginLog(){document.getElementById('loginlog-modal').style.display
 
 /* 更新情報（新しいものを上に追加） type: 'feat'=機能更新 / 'fix'=バグ修正 */
 const APP_UPDATES=[
+  {date:'2026-11-23',type:'fix',text:'テンキー＋（発行）／－（次の客先）が効かない不具合を修正'},
   {date:'2026-11-22',type:'feat',text:'伝票発行・次の客先ボタンにテンキー案内（+)(-)を表示'},
   {date:'2026-11-22',type:'feat',text:'発行後の「次の客先へ」をテンキーの－でも実行できるようにした'},
   {date:'2026-11-22',type:'feat',text:'伝票発行をテンキーの＋でも実行できるようにした'},
